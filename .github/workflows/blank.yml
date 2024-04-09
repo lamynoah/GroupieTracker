@@ -1,0 +1,22 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Execute SSH commmands on remote server
+      uses: JimCronqvist/action-ssh@master
+      with:
+        debug: true
+        hosts: 'tw2mp_groupietracker@tw2mp.ftp.infomaniak.com'
+        privateKey: ${{ secrets.SSH_PRIVATE_KEY }}
+        command: cd sites/groupietracker.vitrihome.fr/ && git pull
