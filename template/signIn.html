@@ -1,0 +1,11 @@
+{{ define "signIn"}}
+<form action="/signIn" method="post">
+    <label for="username">Username:</label>
+    <input type="text" name="username" id="username" autofocus autocomplete="off" required />
+    <label for="password">Password:</label>
+    <input type="password" name="password" id="password" autocomplete="off" required />
+    <label for="email">Email:</label>
+    <input type="email" name="email" id="email" autocomplete="off" required />
+    <button type="submit">Sign In</button>
+</form>
+{{end}}
