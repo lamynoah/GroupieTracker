@@ -1,4 +1,4 @@
-module spotify
+module GT
 
 go 1.21.0
 

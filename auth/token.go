@@ -1,27 +1,27 @@
-package main
+package auth
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
 )
 
-func main() {
-	// Spotify API endpoints
+func Token() {
+	// API endpoints
 	authURL := "https://accounts.spotify.com/api/token"
-
 	clientID := "17e0676008714fb5836169461b3e90f9"
 	clientSecret := "c9ced88874d7417a9a1f78be532ff8df"
 
-	// Encode client ID and client secret to base64
+	// Encode client ID / secret base64
 	auth := base64.StdEncoding.EncodeToString([]byte(clientID + ":" + clientSecret))
 
 	// Prepare request body
 	requestBody := strings.NewReader("grant_type=client_credentials")
 
-	// Request access token from Spotify API
+	// Request access token
 	req, err := http.NewRequest("POST", authURL, requestBody)
 	if err != nil {
 		fmt.Println("Error creating request:", err)
@@ -53,5 +53,18 @@ func main() {
 		return
 	}
 
-	fmt.Println("OK")
+	// Extract access token from response
+	var responseMap map[string]interface{}
+	if err := json.Unmarshal(body, &responseMap); err != nil {
+		fmt.Println("Error parsing response:", err)
+		return
+	}
+	accessToken, ok := responseMap["access_token"].(string)
+	if !ok {
+		fmt.Println("Error: Access token not found in response")
+		return
+	}
+
+	// Print access token and "OK" message
+	fmt.Println(accessToken)
 }
