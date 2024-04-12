@@ -8,6 +8,9 @@ import (
 
 func main() {
 	CreateUserTable()
+	CreateRoomsTable()
+	CreateRoomUsersTable()
+	CreateGamesTable()
 	http.HandleFunc("/selectGame", func(w http.ResponseWriter, r *http.Request) {
 		temp, _ := template.ParseFiles("./pages/selectGame.html")
 		temp.Execute(w, nil)

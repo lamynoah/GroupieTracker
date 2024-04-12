@@ -8,30 +8,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func CreateUserTable() error {
-
-	db, err := sql.Open("sqlite3", "./BDD/Users.db")
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	createTableQuery := `
-        CREATE TABLE IF NOT EXISTS Users (
-            UserID INTEGER PRIMARY KEY AUTOINCREMENT,
-            Username TEXT NOT NULL UNIQUE,
-            Password TEXT NOT NULL,
-            Email TEXT NOT NULL UNIQUE
-        );
-    `
-	_, err = db.Exec(createTableQuery)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 func InsertUser(username, email, password string) error {
-	db, err := sql.Open("sqlite3", "./BDD/Users.db")
+	db, err := sql.Open("sqlite3", "./BDD/table.db")
 	if err != nil {
 		return err
 	}
