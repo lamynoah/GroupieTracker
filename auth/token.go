@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func Token() {
+func Token() string {
 	// API endpoints
 	authURL := "https://accounts.spotify.com/api/token"
 	clientID := "17e0676008714fb5836169461b3e90f9"
@@ -25,7 +25,7 @@ func Token() {
 	req, err := http.NewRequest("POST", authURL, requestBody)
 	if err != nil {
 		fmt.Println("Error creating request:", err)
-		return
+		return ""
 	}
 	req.Header.Set("Authorization", "Basic "+auth)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -35,7 +35,7 @@ func Token() {
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Println("Error sending request:", err)
-		return
+		return ""
 	}
 	defer resp.Body.Close()
 
@@ -43,28 +43,29 @@ func Token() {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Error reading response body:", err)
-		return
+		return ""
 	}
 
 	// Check if request was successful
 	if resp.StatusCode != http.StatusOK {
 		fmt.Println("Error:", resp.Status)
 		fmt.Println(string(body))
-		return
+		return ""
 	}
 
 	// Extract access token from response
 	var responseMap map[string]interface{}
 	if err := json.Unmarshal(body, &responseMap); err != nil {
 		fmt.Println("Error parsing response:", err)
-		return
+		return ""
 	}
 	accessToken, ok := responseMap["access_token"].(string)
 	if !ok {
 		fmt.Println("Error: Access token not found in response")
-		return
+		return ""
 	}
 
-	// Print access token and "OK" message
-	fmt.Println(accessToken)
+	// println(accessToken)
+	// return "accessToken"
+	return accessToken
 }
