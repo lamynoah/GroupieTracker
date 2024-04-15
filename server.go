@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"net/http"
 	"text/template"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -18,8 +19,8 @@ func main() {
 		temp, _ := template.ParseFiles("./pages/selectGame.html")
 		temp.Execute(w, nil)
 	})
-	http.HandleFunc("/signIn", func(w http.ResponseWriter, r *http.Request) {
-		temp, _ := template.ParseFiles("./pages/signIn.html", "./template/signIn.html")
+	http.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) {
+		temp, _ := template.ParseFiles("./pages/signin.html", "./template/signin.html")
 		temp.Execute(w, nil)
 	})
 	http.HandleFunc("/createUser", func(w http.ResponseWriter, r *http.Request) {
@@ -39,8 +40,8 @@ func main() {
 		http.Redirect(w, r, "/selectGame", http.StatusFound)
 	})
 
-	http.HandleFunc("/logIn", func(w http.ResponseWriter, r *http.Request) {
-		temp, _ := template.ParseFiles("./pages/logIn.html")
+	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		temp, _ := template.ParseFiles("./pages/login.html")
 		temp.Execute(w, nil)
 	})
 	http.HandleFunc("/loginUser", func(w http.ResponseWriter, r *http.Request) {
@@ -62,10 +63,25 @@ func main() {
 			return
 		}
 		http.Redirect(w, r, "/selectGame", http.StatusFound)
-
 	})
 
-	fs := http.FileServer(http.Dir("."))
-	http.Handle("/", fs)
+	http.HandleFunc("/blindTest", func(w http.ResponseWriter, r *http.Request) {
+		temp, _ := template.ParseFiles("./pages/blindtest.html")
+		temp.Execute(w, nil)
+	})
+
+	http.HandleFunc("/deafTest", func(w http.ResponseWriter, r *http.Request) {
+		temp, _ := template.ParseFiles("./pages/deafTest.html")
+		temp.Execute(w, nil)
+	})
+	http.HandleFunc("/ptitbac", func(w http.ResponseWriter, r *http.Request) {
+		temp, _ := template.ParseFiles("./pages/ptitBac.html")
+		temp.Execute(w, nil)
+	})
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		temp, _ := template.ParseFiles("./pages/home.html")
+		temp.Execute(w, nil)
+	})
 	http.ListenAndServe(":8080", nil)
 }
