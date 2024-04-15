@@ -1,9 +1,8 @@
 package main
 
 import (
-	. "GT/BDD"
-	. "GT/Connect"
 	"database/sql"
+	"fmt"
 	"net/http"
 	"text/template"
 
@@ -83,5 +82,8 @@ func main() {
 		temp, _ := template.ParseFiles("./pages/home.html")
 		temp.Execute(w, nil)
 	})
+
+	fmt.Println("Listening on port 8080")
+	fmt.Println("http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
 }
