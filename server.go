@@ -1,9 +1,12 @@
 package main
 
 import (
+	. "GT/BDD"
+	. "GT/Connect"
 	"database/sql"
 	"net/http"
 	"text/template"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
@@ -41,7 +44,7 @@ func main() {
 		temp.Execute(w, nil)
 	})
 	http.HandleFunc("/loginUser", func(w http.ResponseWriter, r *http.Request) {
-		db, err := sql.Open("sqlite3", "./BDD/Users.db")
+		db, err := sql.Open("sqlite3", "./BDD/table.db")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

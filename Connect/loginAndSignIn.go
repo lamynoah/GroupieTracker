@@ -1,28 +1,11 @@
-package main
+package connect
 
 import (
 	"database/sql"
 	"fmt"
-
-	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
+	_ "github.com/mattn/go-sqlite3"
 )
-
-
-func InsertUser(username, email, password string) error {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	insertQuery := `INSERT INTO USERS (Username, Password, Email) Values (?,?,?)`
-	_, err = db.Exec(insertQuery, username, password, email)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 func HashPassword(password string) (string, error) {
 	hasedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -130,8 +113,3 @@ func IsMatch(usernameOrEmail, password string, db *sql.DB) (bool, error) {
 	}
 	return false, nil
 }
-
-// username or email => parcourir username = true
-
-// passwor = 1235 => hash
-// bdd.password => hash.password = 1235 et que user or email = same password [index]
