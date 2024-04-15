@@ -1,6 +1,8 @@
 package main
 
 import (
+	. "GT/BDD"
+	. "GT/Connect"
 	"database/sql"
 	"fmt"
 	"net/http"
