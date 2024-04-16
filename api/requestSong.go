@@ -15,12 +15,12 @@ type Track struct {
 	} `json:"artists"`
 }
 
-func getAccessToken() string {
-	accessToken := auth.Token()
-	return accessToken
-}
+// func getAccessToken() string {
+// 	accessToken := auth.Token()
+// 	return accessToken
+// }
 
-func main() {
+func requestSong() {
 	accessToken := getAccessToken()
 	trackID := "5wViaajeHHPZlEjBY9nhU3"
 	url := fmt.Sprintf("https://api.spotify.com/v1/tracks/%s", trackID)
