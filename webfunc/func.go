@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/websocket"
 )
@@ -35,12 +36,12 @@ func reader(conn *websocket.Conn) {
 }
 
 func Select(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("../pages/selectGame.html")
+	temp, _ := template.ParseFiles("./pages/selectGame.html")
 	temp.Execute(w, nil)
 }
 
 func Signin(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("../pages/signin.html", "../template/signin.html")
+	temp, _ := template.ParseFiles("./pages/signin.html", "../template/signin.html")
 	temp.Execute(w, nil)
 }
 
@@ -61,12 +62,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/selectGame", http.StatusFound)
 }
 func Login(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("../pages/login.html")
+	temp, _ := template.ParseFiles("./pages/login.html")
 	temp.Execute(w, nil)
 }
 
 func Connect(w http.ResponseWriter, r *http.Request) {
-	db, err := sql.Open("sqlite3", "../BDD/table.db")
+	db, err := sql.Open("sqlite3", "./BDD/table.db")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -87,30 +88,34 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 }
 
 func BlindTestPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("../pages/blindtest.html")
+	temp, _ := template.ParseFiles("./pages/blindtest.html")
 	temp.Execute(w, nil)
 }
 
 func DeafTestPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("../pages/deaftest.html")
+	temp, _ := template.ParseFiles("./pages/deaftest.html")
 	temp.Execute(w, nil)
 }
 
 func PtitbacPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("../pages/ptitBac.html")
+	temp, _ := template.ParseFiles("./pages/ptitBac.html")
 	letters := []string{}
 	letter := games.GenerateUniqueLetters(&letters)
+	r.ParseForm()
+	time, _ := strconv.Atoi(r.FormValue("timerSeconds"))
+	// round := r.FormValue("roundsNumber")
+	go games.StartTimer(time)
 	temp.Execute(w, letter)
-	go games.StartTimer()
 }
 
 func SettingBacPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("../pages/settingPagesPtitBac.html")
+	temp, _ := template.ParseFiles("./pages/settingPagesPtitBac.html")
+
 	temp.Execute(w, nil)
 }
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("../pages/home.html")
+	temp, _ := template.ParseFiles("./pages/home.html")
 	temp.Execute(w, nil)
 }
 

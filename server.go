@@ -14,6 +14,7 @@ func main() {
 	http.HandleFunc("/createUser", webfunc.CreateUser)
 	http.HandleFunc("/login", webfunc.Login)
 	http.HandleFunc("/loginUser", webfunc.Connect)
+	http.HandleFunc("/settingBacPage", webfunc.SettingBacPage)
 	http.HandleFunc("/blindTest", webfunc.BlindTestPage)
 	http.HandleFunc("/deafTest", webfunc.DeafTestPage)
 	http.HandleFunc("/ptitbac", webfunc.PtitbacPage)

@@ -1,7 +1,7 @@
 package games
 
 import (
-	"fmt"
+	"log"
 	"math/rand"
 	"time"
 )
@@ -33,10 +33,9 @@ func GenerateUniqueLetters(arrayLetter *[]string) string {
 	}
 }
 
-func StartTimer() {
-	duration :=  5* time.Second
-	time.Sleep(duration)
-	fmt.Println("Timer expired!")
+func StartTimer(duration int) {
+	time.Sleep(time.Duration(duration) * time.Second)
+	log.Println("Timer expired!")
 }
 
 // func RecupInput(w http.ResponseWriter, r *http.Request) {
