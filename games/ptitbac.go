@@ -1,6 +1,7 @@
 package games
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -31,3 +32,17 @@ func GenerateUniqueLetters(arrayLetter *[]string) string {
 		}
 	}
 }
+
+func StartTimer() {
+	duration :=  5* time.Second
+	time.Sleep(duration)
+	fmt.Println("Timer expired!")
+}
+
+// func RecupInput(w http.ResponseWriter, r *http.Request) {
+// 	artiste := r.FormValue("artiste")
+// 	album := r.FormValue("album")
+// 	groupe := r.FormValue("groupe")
+// 	instrument := r.FormValue("instrument")
+// 	featuring := r.FormValue("featuring")
+// }

@@ -7,6 +7,7 @@
     <title>PetitBac</title>
 </head>
 <body>
+    <h1> Letter : {{.}} </h1>
     <label for="artiste">Artiste:</label>
     <input type="text" name="artiste" id="artiste" autofocus autocomplete="off" required /><br>
 
@@ -21,7 +22,30 @@
 
     <label for="featuring">Featuring:</label>
     <input type="text" name="featuring" id="featuring" autocomplete="off" required /><br>
-<div> test</div>
+    <div> test</div>
+    
+    <script>
+        let socket = new WebSocket("ws://localhost:8080/ws");
+        console.log("Attempting Connection...");
+
+        socket.onopen = () => {
+            console.log("Successfully Connected");
+            socket.send("Hi From the Client!")
+        };
+
+        socket.onclose = event => {
+            console.log("Socket Closed Connection: ", event);
+            socket.send("Client Closed!")
+        };
+
+        socket.onmessage = msg => {
+            console.log("Message Recieved: ", msg);
+        };
+
+        socket.onerror = error => {
+            console.log("Socket Error: ", error);
+        };
+    </script>
 </body>
 
 </html>
