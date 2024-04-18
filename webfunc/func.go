@@ -85,17 +85,17 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 }
 
 func BlindTestPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/blindtest.html")
+	temp, _ := template.ParseFiles("./pages/blindTest.html")
 	temp.Execute(w, nil)
 }
 
 func DeafTestPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/blindtest.html")
+	temp, _ := template.ParseFiles("./pages/deafTest.html")
 	temp.Execute(w, nil)
 }
 
 func PtitbacPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/blindtest.html")
+	temp, _ := template.ParseFiles("./pages/ptitBac.html")
 	temp.Execute(w, nil)
 }
 
