@@ -1,6 +1,8 @@
-package main
+package bdd
 
-import "database/sql"
+
+import ("database/sql"
+_ "github.com/mattn/go-sqlite3")
 
 func CreateUserTable() error {
 
@@ -24,15 +26,14 @@ func CreateUserTable() error {
 	return nil
 }
 
-
 func CreateRoomsTable() error {
-    db, err := sql.Open("sqlite3", "./BDD/table.db")
-    if err != nil {
-        return err
-    }
-    defer db.Close()
+	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	if err != nil {
+		return err
+	}
+	defer db.Close()
 
-    createTableQuery := `
+	createTableQuery := `
         CREATE TABLE IF NOT EXISTS ROOMS (
             id INTEGER PRIMARY KEY,
             created_by INTEGER NOT NULL,
@@ -44,23 +45,22 @@ func CreateRoomsTable() error {
         );
     `
 
-    _, err = db.Exec(createTableQuery)
-    if err != nil {
-        return err
-    }
+	_, err = db.Exec(createTableQuery)
+	if err != nil {
+		return err
+	}
 
-    return nil
+	return nil
 }
 
-
 func CreateRoomUsersTable() error {
-    db, err := sql.Open("sqlite3", "./BDD/table.db")
-    if err != nil {
-        return err
-    }
-    defer db.Close()
+	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	if err != nil {
+		return err
+	}
+	defer db.Close()
 
-    createTableQuery := `
+	createTableQuery := `
         CREATE TABLE IF NOT EXISTS ROOM_USERS (
             id_room INTEGER,
             id_user INTEGER,
@@ -71,37 +71,30 @@ func CreateRoomUsersTable() error {
         );
     `
 
-    _, err = db.Exec(createTableQuery)
-    if err != nil {
-        return err
-    }
+	_, err = db.Exec(createTableQuery)
+	if err != nil {
+		return err
+	}
 
-    return nil
+	return nil
 }
 
-
-
 func CreateGamesTable() error {
-    db, err := sql.Open("sqlite3", "./BDD/table.db")
-    if err != nil {
-        return err
-    }
-    defer db.Close()
+	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	if err != nil {
+		return err
+	}
+	defer db.Close()
 
-    createTableQuery := `
+	createTableQuery := `
         CREATE TABLE IF NOT EXISTS GAMES (
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL
         );
     `
-    _, err = db.Exec(createTableQuery)
-    if err != nil {
-        return err
-    }
-    return nil
+	_, err = db.Exec(createTableQuery)
+	if err != nil {
+		return err
+	}
+	return nil
 }
-
-
-
-
-
