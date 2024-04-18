@@ -10,18 +10,18 @@ import (
 )
 
 func Token() string {
-	// API endpoints
+	//API endpoints
 	authURL := "https://accounts.spotify.com/api/token"
 	clientID := "17e0676008714fb5836169461b3e90f9"
 	clientSecret := "c9ced88874d7417a9a1f78be532ff8df"
 
-	// Encode client ID / secret base64
+	//Encode client ID / secret
 	auth := base64.StdEncoding.EncodeToString([]byte(clientID + ":" + clientSecret))
 
-	// Prepare request body
+	//Request body
 	requestBody := strings.NewReader("grant_type=client_credentials")
 
-	// Request access token
+	//Request token
 	req, err := http.NewRequest("POST", authURL, requestBody)
 	if err != nil {
 		fmt.Println("Error creating request:", err)
@@ -39,21 +39,21 @@ func Token() string {
 	}
 	defer resp.Body.Close()
 
-	// Read response body
+	// Read response
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Error reading response body:", err)
 		return ""
 	}
 
-	// Check if request was successful
+	// Check request
 	if resp.StatusCode != http.StatusOK {
 		fmt.Println("Error:", resp.Status)
 		fmt.Println(string(body))
 		return ""
 	}
 
-	// Extract access token from response
+	// Extract token
 	var responseMap map[string]interface{}
 	if err := json.Unmarshal(body, &responseMap); err != nil {
 		fmt.Println("Error parsing response:", err)
@@ -65,7 +65,5 @@ func Token() string {
 		return ""
 	}
 
-	// println(accessToken)
-	// return "accessToken"
 	return accessToken
 }
