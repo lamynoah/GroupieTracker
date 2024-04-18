@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"GT/auth"
@@ -15,13 +15,14 @@ type Track struct {
 	} `json:"artists"`
 }
 
-// func getAccessToken() string {
-// 	accessToken := auth.Token()
-// 	return accessToken
-// }
+func GetAccessToken() string {
+	accessToken := auth.Token()
+	return accessToken
+}
 
+//lint:ignore U1000 reason used later
 func requestSong() {
-	accessToken := getAccessToken()
+	accessToken := GetAccessToken()
 	trackID := "5wViaajeHHPZlEjBY9nhU3"
 	url := fmt.Sprintf("https://api.spotify.com/v1/tracks/%s", trackID)
 

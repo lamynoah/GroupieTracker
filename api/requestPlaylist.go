@@ -1,7 +1,6 @@
-package main
+package api
 
 import (
-	"GT/auth"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -22,13 +21,9 @@ type Playlist struct {
 	} `json:"tracks"`
 }
 
-func getAccessToken() string {
-	accessToken := auth.Token()
-	return accessToken
-}
-
-func main() {
-	accessToken := getAccessToken()
+//lint:ignore U1000 reason fuck off
+func requestPlaylist() {
+	accessToken := GetAccessToken()
 	playlistID := "5Gu2ik0W12YoOexbFzYMTK" //playlist ID
 	url := fmt.Sprintf("https://api.spotify.com/v1/playlists/%s", playlistID)
 
