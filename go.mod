@@ -1,8 +1,11 @@
 module GT
 
-go 1.21.0
+go 1.21.6
 
 require (
-	github.com/zmb3/spotify v1.3.0
-	golang.org/x/oauth2 v0.19.0
+	github.com/gorilla/websocket v1.5.1
+	github.com/mattn/go-sqlite3 v1.14.22
+	golang.org/x/crypto v0.22.0
 )
+
+require golang.org/x/net v0.24.0 // indirect
