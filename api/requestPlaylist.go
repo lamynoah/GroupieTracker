@@ -1,30 +1,31 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
+	"time"
 )
 
-type Playlist struct {
-	Name   string `json:"name"`
-	Tracks struct {
-		Items []struct {
-			Track struct {
-				Name    string `json:"name"`
-				Artists []struct {
-					Name string `json:"name"`
-				} `json:"artists"`
-			} `json:"track"`
-		} `json:"items"`
-	} `json:"tracks"`
+//lint:ignore U1000 reason fuck off
+func selectRandomPlaylist() string {
+	playlistID := []string{
+		"5Gu2ik0W12YoOexbFzYMTK",
+		"37i9dQZF1DX188IBQOaMiA",
+		"37i9dQZF1DXacPj7eARo6k",
+		"3B8dwKgIMb0yNvvrEeqgyR",
+	}
+
+	rand.Seed((time.Now().UnixNano()))
+	randomIndex := rand.Intn(len(playlistID))
+	return playlistID[randomIndex]
 }
 
 //lint:ignore U1000 reason fuck off
-func requestPlaylist() {
+func RequestPlaylist() string {
 	accessToken := GetAccessToken()
-	playlistID := "5Gu2ik0W12YoOexbFzYMTK" //playlist ID
+	playlistID := selectRandomPlaylist() //playlist ID
 	url := fmt.Sprintf("https://api.spotify.com/v1/playlists/%s", playlistID)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -41,19 +42,5 @@ func requestPlaylist() {
 	}
 	defer resp.Body.Close()
 
-	var playlistData Playlist
-	if err := json.NewDecoder(resp.Body).Decode(&playlistData); err != nil {
-		log.Fatal("Error decoding JSON", err)
-	}
-
-	fmt.Println("Playlist:", playlistData.Name)
-	fmt.Println("Tracks:")
-	for _, item := range playlistData.Tracks.Items {
-		track := item.Track
-		fmt.Println("Track:", track.Name)
-		fmt.Println("Artists:")
-		for _, artist := range track.Artists {
-			fmt.Println("-", artist.Name)
-		}
-	}
+	return playlistID
 }

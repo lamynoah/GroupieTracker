@@ -1,11 +1,14 @@
 package api
 
 import (
+	"GT/api"
 	"GT/auth"
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
+	"time"
 )
 
 type Track struct {
@@ -20,10 +23,10 @@ func GetAccessToken() string {
 	return accessToken
 }
 
-//lint:ignore U1000 reason used later
 func requestSong() {
-	accessToken := GetAccessToken()
-	trackID := "5wViaajeHHPZlEjBY9nhU3"
+	accessToken := api.GetAccessToken()
+	playlistID := api.RequestPlaylist()
+	trackID := selectRandomTrack(playlistID)
 	url := fmt.Sprintf("https://api.spotify.com/v1/tracks/%s", trackID)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -49,7 +52,57 @@ func requestSong() {
 	fmt.Println("Artist:")
 	for _, artist := range trackData.Artists {
 		fmt.Println("-", artist.Name)
+	}
+}
 
+func selectRandomTrack(playlistID string) string {
+	tracks := extractTrackID(playlistID)
+
+	if len(tracks) == 0 {
+		log.Fatal("Playlist is empty")
 	}
 
+	rand.Seed(time.Now().UnixNano())
+
+	randomIndex := rand.Intn(len(tracks))
+	return tracks[randomIndex]
+}
+
+func extractTrackID(playlistID string) []string {
+	accessToken := GetAccessToken()
+	url := fmt.Sprintf("https://api.spotify.com/v1/playlists/%s", playlistID)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Fatal("Error creating request:", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal("error sending request", err)
+	}
+	defer resp.Body.Close()
+
+	var playlistData struct {
+		Tracks struct {
+			Items []struct {
+				Track struct {
+					ID string `json:"id"`
+				} `json:"track"`
+			} `json:"items"`
+		} `json:"tracks"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&playlistData); err != nil {
+		log.Fatal("Error decoding JSON", err)
+	}
+
+	var trackID []string
+	for _, item := range playlistData.Tracks.Items {
+		trackID = append(trackID, item.Track.ID)
+	}
+
+	return trackID
 }
