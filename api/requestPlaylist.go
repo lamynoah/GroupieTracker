@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-//lint:ignore U1000 reason fuck off
+//lint:ignore U1000 reason
 func selectRandomPlaylist() string {
 	playlistID := []string{
 		"5Gu2ik0W12YoOexbFzYMTK",
@@ -22,7 +22,7 @@ func selectRandomPlaylist() string {
 	return playlistID[randomIndex]
 }
 
-//lint:ignore U1000 reason fuck off
+//lint:ignore U1000 reason
 func RequestPlaylist() string {
 	accessToken := GetAccessToken()
 	playlistID := selectRandomPlaylist() //playlist ID

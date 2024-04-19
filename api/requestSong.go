@@ -1,7 +1,6 @@
 package api
 
 import (
-	"GT/api"
 	"GT/auth"
 	"encoding/json"
 	"fmt"
@@ -23,9 +22,10 @@ func GetAccessToken() string {
 	return accessToken
 }
 
+//lint:ignore U1000 reason
 func requestSong() {
-	accessToken := api.GetAccessToken()
-	playlistID := api.RequestPlaylist()
+	accessToken := GetAccessToken()
+	playlistID := RequestPlaylist()
 	trackID := selectRandomTrack(playlistID)
 	url := fmt.Sprintf("https://api.spotify.com/v1/tracks/%s", trackID)
 
@@ -55,6 +55,7 @@ func requestSong() {
 	}
 }
 
+//lint:ignore U1000 reason
 func selectRandomTrack(playlistID string) string {
 	tracks := extractTrackID(playlistID)
 
@@ -68,6 +69,7 @@ func selectRandomTrack(playlistID string) string {
 	return tracks[randomIndex]
 }
 
+//lint:ignore U1000 reason
 func extractTrackID(playlistID string) []string {
 	accessToken := GetAccessToken()
 	url := fmt.Sprintf("https://api.spotify.com/v1/playlists/%s", playlistID)
