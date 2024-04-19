@@ -13,6 +13,15 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+
+type ptitBac struct {
+	Artiste string
+	Album string
+ 	Groupe string
+ 	Instrument string
+ 	Featuring string
+}
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -104,6 +113,13 @@ func PtitbacPage(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	time, _ := strconv.Atoi(r.FormValue("timerSeconds"))
 	// round := r.FormValue("roundsNumber")
+	// artiste := r.FormValue("artiste")
+	// album := r.FormValue("album")
+	// groupe := r.FormValue("groupe")
+	// instrument := r.FormValue("instrument")
+	// featuring := r.FormValue("featuring")
+	 
+
 	go games.StartTimer(time)
 	temp.Execute(w, letter)
 }

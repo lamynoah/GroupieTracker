@@ -1,6 +1,7 @@
 package main
 
 import (
+	bdd "GT/BDD"
 	"GT/webfunc"
 	"fmt"
 	"net/http"
@@ -9,6 +10,10 @@ import (
 )
 
 func main() {
+	bdd.CreateUserTable()
+	bdd.CreateRoomsTable()
+	bdd.CreateRoomUsersTable()
+	bdd.CreateGamesTable()
 	http.HandleFunc("/selectGame", webfunc.Select)
 	http.HandleFunc("/signin", webfunc.Signin)
 	http.HandleFunc("/createUser", webfunc.CreateUser)
