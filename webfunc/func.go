@@ -4,10 +4,12 @@ import (
 	. "GT/BDD"
 	. "GT/Connect"
 	"database/sql"
-	"github.com/gorilla/websocket"
 	"html/template"
 	"log"
 	"net/http"
+	"regexp"
+
+	"github.com/gorilla/websocket"
 )
 
 var upgrader = websocket.Upgrader{
@@ -36,16 +38,29 @@ func Select(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/selectGame.html")
 	temp.Execute(w, nil)
 }
-
+var dataError = struct{
+	Error string
+}{""}
 func Signin(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/signin.html", "./template/signin.html")
-	temp.Execute(w, nil)
+	temp.Execute(w, dataError)
+	dataError.Error = ""
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	email := r.FormValue("email")
 	password := r.FormValue("password")
+	UpperCase := regexp.MustCompile(`[A-Z]`)
+	SpecialCar := regexp.MustCompile(`[^a-zA-Z0-9]`)
+	hasNumber := regexp.MustCompile(`[0-9]`)
+
+	if !UpperCase.MatchString(password) && !SpecialCar.MatchString(password) && !hasNumber.MatchString(password) && len(password) < 12 {
+		dataError.Error = "Le mot de passe doit contenir au moins 1 nombre, 1 majuscule, 1 caractère spécial et doit être d'au moins 12 caractères"
+		http.Redirect(w,r , "/signin", http.StatusFound)
+		return 
+	}
+
 	hasedPassword, err := HashPassword(password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -58,6 +73,8 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, "/selectGame", http.StatusFound)
 }
+
+
 func Login(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/login.html")
 	temp.Execute(w, nil)
