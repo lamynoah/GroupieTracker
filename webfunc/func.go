@@ -13,13 +13,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-
 type ptitBac struct {
-	Artiste string
-	Album string
- 	Groupe string
- 	Instrument string
- 	Featuring string
+	Artiste    string
+	Album      string
+	Groupe     string
+	Instrument string
+	Featuring  string
 }
 
 var upgrader = websocket.Upgrader{
@@ -106,6 +105,14 @@ func DeafTestPage(w http.ResponseWriter, r *http.Request) {
 	temp.Execute(w, nil)
 }
 
+func Loading(w http.ResponseWriter, r *http.Request) {
+	temp, _ := template.ParseFiles("./pages/loading.html")
+	r.ParseForm()
+	r.FormValue("playersNumber")
+	r.FormValue("name")
+	temp.Execute(w, nil)
+}
+
 func PtitbacPage(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/ptitBac.html")
 	letters := []string{}
@@ -118,7 +125,6 @@ func PtitbacPage(w http.ResponseWriter, r *http.Request) {
 	// groupe := r.FormValue("groupe")
 	// instrument := r.FormValue("instrument")
 	// featuring := r.FormValue("featuring")
-	 
 
 	go games.StartTimer(time)
 	temp.Execute(w, letter)
