@@ -4,10 +4,11 @@ import (
 	. "GT/BDD"
 	. "GT/Connect"
 	"database/sql"
-	"github.com/gorilla/websocket"
 	"html/template"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/websocket"
 )
 
 var upgrader = websocket.Upgrader{
@@ -114,4 +115,9 @@ func WebSocket(w http.ResponseWriter, r *http.Request) {
 	log.Println("Client connected successfully")
 
 	reader(ws)
+}
+
+func TestPage(w http.ResponseWriter, r *http.Request) {
+	temp, _ := template.ParseFiles("./pages/testPage.html")
+	temp.Execute(w, nil)
 }

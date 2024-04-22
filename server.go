@@ -17,6 +17,7 @@ func main() {
 	http.HandleFunc("/blindTest", webfunc.BlindTestPage)
 	http.HandleFunc("/deafTest", webfunc.DeafTestPage)
 	http.HandleFunc("/ptitbac", webfunc.PtitbacPage)
+	http.HandleFunc("/test", webfunc.TestPage)
 	http.HandleFunc("/", webfunc.HomePage)
 	http.HandleFunc("/ws", webfunc.WebSocket)
 
