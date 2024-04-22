@@ -2,9 +2,9 @@ package connect
 
 import (
 	"database/sql"
-	"fmt"
-	"golang.org/x/crypto/bcrypt"
+
 	_ "github.com/mattn/go-sqlite3"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func HashPassword(password string) (string, error) {
@@ -74,26 +74,20 @@ type User struct {
 }
 
 func GetAllUsersDetails(db *sql.DB) (map[string]User, error) {
-	detailsUsers := make(map[string]User)
-	usernames, err := QueryNameUsers(db)
+	rows, err := db.Query("SELECT Username, Email, Password FROM Users")
 	if err != nil {
 		return nil, err
 	}
-	emails, err := QueryEmailUsers(db)
-	if err != nil {
-		return nil, err
-	}
-	passwords, err := QueryPasswordUsers(db)
-	if err != nil {
-		return nil, err
-	}
-	for i, username := range usernames {
-		detailsUsers[username] = User{
-			emails[i],
-			passwords[i],
+	defer rows.Close()
+	users := make(map[string]User)
+	for rows.Next() {
+		var datas struct{ Username, Email, Password string }
+		if err := rows.Scan(&datas.Username, &datas.Email, &datas.Password); err != nil {
+			return nil, err
 		}
+		users[datas.Username] = User{datas.Email, datas.Password}
 	}
-	return detailsUsers, nil
+	return users, nil
 }
 
 func IsMatch(usernameOrEmail, password string, db *sql.DB) (bool, error) {
@@ -102,12 +96,12 @@ func IsMatch(usernameOrEmail, password string, db *sql.DB) (bool, error) {
 		return false, err
 	}
 	for userName, userValue := range users {
-		fmt.Println(userName, userValue)
 		if usernameOrEmail == userName || usernameOrEmail == userValue.email {
-			if password == userValue.password {
+			err := bcrypt.CompareHashAndPassword([]byte(userValue.password), []byte(password))
+			if err == nil {
 				return true, nil
 			} else {
-				return false, fmt.Errorf("Incorrect password: " + password + " != " + userValue.password)
+				return false, err
 			}
 		}
 	}

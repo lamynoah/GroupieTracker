@@ -16,6 +16,9 @@
         <input type="password" id="password" name="password" required> <br>
         <input type="submit" value="Log-in">
     </form>
+    {{if .Error}}
+    <p style="color: red;">{{.Error}}</p>
+    {{end}}
 </body>
 
 </html>
