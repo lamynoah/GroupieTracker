@@ -2,10 +2,33 @@ package connect
 
 import (
 	"database/sql"
+	"net/http"
+	"strconv"
 
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
+
+func UserCookies(w http.ResponseWriter, id int) {
+	cookie := http.Cookie{
+		Name:  "Id",
+		Value: strconv.Itoa(id),
+		Path:  "/",
+	}
+	http.SetCookie(w, &cookie)
+}
+
+func Islogin(r *http.Request) (bool, int) {
+	cookie, err := r.Cookie("Id")
+	if err != nil {
+		return false, 0
+	}
+	id, err := strconv.Atoi(cookie.Value)
+	if err != nil {
+		return false, 0
+	}
+	return true, id
+}
 
 func HashPassword(password string) (string, error) {
 	hasedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -66,6 +89,25 @@ func QueryPasswordUsers(db *sql.DB) ([]string, error) {
 		Passwords = append(Passwords, password)
 	}
 	return Passwords, nil
+}
+
+func QueryUserId(usernameOrEmail string) (int, error) {
+	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	if err != nil {
+		return 0, err
+	}
+	defer db.Close()
+
+	query := "Select UserID FROM Users WHERE Username = ? OR Email = ?"
+	var id int
+	err = db.QueryRow(query, usernameOrEmail, usernameOrEmail).Scan(&id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, err
+		}
+		return 0, err
+	}
+	return id, nil
 }
 
 type User struct {
