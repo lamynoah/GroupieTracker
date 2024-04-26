@@ -22,8 +22,24 @@ func reader(conn *websocket.Conn) {
 			log.Println(err)
 			return
 		}
-
 		log.Println(string(p))
+
+		//test := struct {
+		//	Message string
+		//	Id      int
+		//	User    string
+		//	Name    string
+		//}{
+		//	"testMessage",
+		//	3,
+		//	"User",
+		//	"Name",
+		//}
+
+		//if err := conn.WriteJSON(test); err != nil {
+		//	log.Println(err)
+		//	return
+		//}
 
 		if err := conn.WriteMessage(messageType, p); err != nil {
 			log.Println(err)
@@ -89,18 +105,14 @@ func BlindTestPage(w http.ResponseWriter, r *http.Request) {
 	temp.Execute(w, nil)
 }
 
-func DeafTestPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/deafTest.html")
-	temp.Execute(w, nil)
-}
-
+//goland:noinspection SpellCheckingInspection
 func PtitbacPage(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/ptitBac.html")
 	temp.Execute(w, nil)
 }
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/home.html")
+	temp, _ := template.ParseFiles("./pages/home.html", "./template/websocket.html")
 	temp.Execute(w, nil)
 }
 

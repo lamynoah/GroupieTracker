@@ -6,6 +6,14 @@
     <title>DeafTest</title>
 </head>
 <body>
-    <div> test</div>
+    <p>======================================</p>
+    <div>{{.Title}}</div>
+    <div>{{.Lyrics}}</div>
+    <p>======================================</p>
+
+    <label for="rep">Response = </label><input type="text" id="rep">
+    <button onclick='socket.send(document.getElementById("rep").textContent)'>SendResponse</button>
+
+    {{template "socket"}}
 </body>
 </html>
