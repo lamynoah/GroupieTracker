@@ -38,10 +38,37 @@ func StartTimer(duration int) {
 	log.Println("Timer expired!")
 }
 
-// func RecupInput(w http.ResponseWriter, r *http.Request) {
-// 	artiste := r.FormValue("artiste")
-// 	album := r.FormValue("album")
-// 	groupe := r.FormValue("groupe")
-// 	instrument := r.FormValue("instrument")
-// 	featuring := r.FormValue("featuring")
-// }
+type Input struct {
+	Artiste    string
+	Album      string
+	Groupe     string
+	Instrument string
+	Featuring  string
+}
+
+func IsElementUnique(arrayInput []Input) {
+	mapArtiste := make(map[string]int)
+	mapAlbum := make(map[string]int)
+	mapGroupe := make(map[string]int)
+	mapInstrument := make(map[string]int)
+	mapFeaturing := make(map[string]int)
+	for _, v := range arrayInput {
+		mapArtiste[v.Artiste]++
+		mapAlbum[v.Album]++
+		mapGroupe[v.Groupe]++
+		mapInstrument[v.Instrument]++
+		mapFeaturing[v.Featuring]++
+	}
+	// Si réponse Unique score += 2 si réponse non unique score += 1
+	// {"noah":2,"omar":1}
+}
+
+
+
+
+
+// artiste = noah && artiste = noah  == 1 points
+
+
+
+

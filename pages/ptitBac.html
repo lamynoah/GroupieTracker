@@ -6,11 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PetitBac</title>
 </head>
-
+{{ .Isplaying}}
 <body>
     <h1> Letter : {{.}} </h1>
-
-
     <form action="/result" method="post">
         <label for="artiste">Artiste:</label>
         <input type="text" name="artiste" id="artiste" autofocus autocomplete="off" required /><br>
@@ -51,5 +49,6 @@
         };
     </script>
 </body>
+
 
 </html>

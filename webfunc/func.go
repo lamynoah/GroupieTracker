@@ -13,13 +13,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-
 type ptitBac struct {
-	Artiste string
-	Album string
- 	Groupe string
- 	Instrument string
- 	Featuring string
+	Artiste    string
+	Album      string
+	Groupe     string
+	Instrument string
+	Featuring  string
 }
 
 var upgrader = websocket.Upgrader{
@@ -106,19 +105,31 @@ func DeafTestPage(w http.ResponseWriter, r *http.Request) {
 	temp.Execute(w, nil)
 }
 
+var letter string
+var arrayInput []games.Input
+
 func PtitbacPage(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/ptitBac.html")
 	letters := []string{}
-	letter := games.GenerateUniqueLetters(&letters)
+	if len(letter) == 0 {
+		letter = games.GenerateUniqueLetters(&letters)
+	}
 	r.ParseForm()
 	time, _ := strconv.Atoi(r.FormValue("timerSeconds"))
 	// round := r.FormValue("roundsNumber")
-	// artiste := r.FormValue("artiste")
-	// album := r.FormValue("album")
-	// groupe := r.FormValue("groupe")
-	// instrument := r.FormValue("instrument")
-	// featuring := r.FormValue("featuring")
-	 
+	artiste := r.FormValue("artiste")
+	album := r.FormValue("album")
+	groupe := r.FormValue("groupe")
+	instrument := r.FormValue("instrument")
+	featuring := r.FormValue("featuring")
+	input := games.Input{
+		Artiste: artiste,
+		Album: album,
+		Groupe: groupe,
+		Instrument: instrument,
+		Featuring: featuring,
+	}
+	arrayInput = append(arrayInput, input)
 
 	go games.StartTimer(time)
 	temp.Execute(w, letter)
