@@ -8,7 +8,7 @@
 </head>
 {{if .Isplaying}}
 <body>
-    <h1> Letter : {{.}} </h1>
+    <h1> Letter : {{.Letter}} </h1>
     <form action="/result" method="post">
         <label for="artiste">Artiste:</label>
         <input type="text" name="artiste" id="artiste" autofocus autocomplete="off" required /><br>
@@ -26,8 +26,8 @@
         <input type="text" name="featuring" id="featuring" autocomplete="off" required /><br>
         <input type="submit" value=" FINISH">
     </form>
-    {{ template "websocket" "ptitbac"}} 
+    {{template "websocket" "ptitBac"}} 
 </body>
-{{end }}
+{{end}}
 
 </html>

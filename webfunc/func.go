@@ -5,34 +5,15 @@ import (
 	. "GT/Connect"
 	"GT/games"
 	"database/sql"
-<<<<<<<<< Temporary merge branch 1
-	"html/template"
-	"log"
-	"net/http"
-	"strconv"
-=========
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"regexp"
->>>>>>>>> Temporary merge branch 2
+	"strconv"
 
 	"github.com/gorilla/websocket"
 )
-
-type ptitBac struct {
-	Artiste    string
-	Album      string
-	Groupe     string
-	Instrument string
-	Featuring  string
-	Artiste    string
-	Album      string
-	Groupe     string
-	Instrument string
-	Featuring  string
-}
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -193,25 +174,9 @@ func DeafTestPage(w http.ResponseWriter, r *http.Request) {
 	temp.Execute(w, nil)
 }
 
-func Loading(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/loading.html", "./template/websocket.html")
-	r.ParseForm()
-	r.FormValue("playersNumber")
-	r.FormValue("name")
-	temp.Execute(w, nil)
-}
 
-var letter string
-var arrayInput []games.Input
-
-func PtitbacPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/ptitBac.html", "./template")
-	letters := []string{}
-	if len(letter) == 0 {
-		letter = games.GenerateUniqueLetters(&letters)
-	}
+func Result(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	time, _ := strconv.Atoi(r.FormValue("timerSeconds"))
 	// round := r.FormValue("roundsNumber")
 	artiste := r.FormValue("artiste")
 	album := r.FormValue("album")
@@ -226,9 +191,30 @@ func PtitbacPage(w http.ResponseWriter, r *http.Request) {
 		Featuring:  featuring,
 	}
 	arrayInput = append(arrayInput, input)
+	http.Redirect(w,r, "/")
+}
 
+func Loading(w http.ResponseWriter, r *http.Request) {
+	temp, _ := template.ParseFiles("./pages/loading.html", "./template/websocket.html")
+	r.ParseForm()
+	r.FormValue("playersNumber")
+	r.FormValue("name")
+	time, _ := strconv.Atoi(r.FormValue("timerSeconds"))
+	temp.Execute(w, nil)
+}
+
+var letter string
+var arrayInput []games.Input
+
+func PtitbacPage(w http.ResponseWriter, r *http.Request) {
+	temp, _ := template.ParseFiles("./pages/ptitBac.html", "./template")
+	letters := []string{}
+	if len(letter) == 0 {
+		letter = games.GenerateUniqueLetters(&letters)
+	}
+	
 	go games.StartTimer(time)
-	temp.Execute(w, letter)
+	temp.Execute(w, struct{Letter string; Isplaying bool}{letter, true})
 }
 
 func SettingBacPage(w http.ResponseWriter, r *http.Request) {
