@@ -9,16 +9,18 @@
 
 <body>
     <h2>Timer Configuration</h2>
-    <form action="/ptitbac" method="post">
+    <form action="/loadingpage" method="post">
         <label for="timerSeconds">Number of seconds for the timer:</label>
         <input type="number" id="timerSeconds" name="timerSeconds" min="1" required>
         <br>
         <label for="roundsNumber">Number of rounds (must be less than 26):</label>
         <input type="number" id="roundsNumber" name="roundsNumber" min="1" max="25" required>
         <br> 
-        <label for="nbplayer"> Number of player</label>
+        <label for="playersNumber"> Number of player</label>
         <input type="number" id="playersNumber" name="playersNumber" required>
         <br>
+        <label for="name"> Name : </label>
+        <input type="text" id="name" name="name" required>
         <input type="submit" value="Start">
     </form>
 </body>

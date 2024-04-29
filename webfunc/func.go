@@ -5,17 +5,28 @@ import (
 	. "GT/Connect"
 	"GT/games"
 	"database/sql"
+<<<<<<<<< Temporary merge branch 1
+	"html/template"
+	"log"
+	"net/http"
+	"strconv"
+=========
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"regexp"
-	"strconv"
+>>>>>>>>> Temporary merge branch 2
 
 	"github.com/gorilla/websocket"
 )
 
 type ptitBac struct {
+	Artiste    string
+	Album      string
+	Groupe     string
+	Instrument string
+	Featuring  string
 	Artiste    string
 	Album      string
 	Groupe     string
@@ -28,20 +39,43 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func reader(conn *websocket.Conn) {
-	for {
-		messageType, p, err := conn.ReadMessage()
-		if err != nil {
-			log.Println(err)
-			return
-		}
+func reader(conn *websocket.Conn, game string) {
+	switch game {
+	case "blindTest":
+		fmt.Println("game:", game)
+	case "deafTest":
+		fmt.Println("game:", game)
+		for {
+			messageType, p, err := conn.ReadMessage()
+			if err != nil {
+				log.Println(err)
+				return
+			}
 
-		log.Println(string(p))
+			log.Println(string(p))
 
-		if err := conn.WriteMessage(messageType, p); err != nil {
-			log.Println(err)
-			return
+			if err := conn.WriteMessage(messageType, p); err != nil {
+				log.Println(err)
+				return
+			}
 		}
+	case "ptitBac":
+		for {
+			messageType, p, err := conn.ReadMessage()
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			log.Println(string(p))
+
+			if err := conn.WriteMessage(messageType, p); err != nil {
+				log.Println(err)
+				return
+			}
+		}
+	default:
+		fmt.Println("Unknown game:", game)
 	}
 }
 
@@ -150,12 +184,20 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 }
 
 func BlindTestPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/blindTest.html")
+	temp, _ := template.ParseFiles("./pages/blindTest.html", "./template/websocket.html")
 	temp.Execute(w, nil)
 }
 
 func DeafTestPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/deafTest.html")
+	temp, _ := template.ParseFiles("./pages/deafTest.html", "./template/websocket.html")
+	temp.Execute(w, nil)
+}
+
+func Loading(w http.ResponseWriter, r *http.Request) {
+	temp, _ := template.ParseFiles("./pages/loading.html", "./template/websocket.html")
+	r.ParseForm()
+	r.FormValue("playersNumber")
+	r.FormValue("name")
 	temp.Execute(w, nil)
 }
 
@@ -196,7 +238,7 @@ func SettingBacPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/home.html")
+	temp, _ := template.ParseFiles("./pages/home.html", "./template/websocket.html")
 	temp.Execute(w, nil)
 }
 
@@ -208,6 +250,10 @@ func WebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Println("Client connected successfully")
-
-	reader(ws)
+	uri := r.RequestURI
+	if len(uri) >= 4 {
+		reader(ws, uri[4:])
+	} else {
+		reader(ws, uri)
+	}
 }
