@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PetitBac</title>
 </head>
-{{ .Isplaying}}
+{{if .Isplaying}}
 <body>
     <h1> Letter : {{.}} </h1>
     <form action="/result" method="post">
@@ -26,29 +26,8 @@
         <input type="text" name="featuring" id="featuring" autocomplete="off" required /><br>
         <input type="submit" value=" FINISH">
     </form>
-    <script>
-        let socket = new WebSocket("ws://localhost:8080/ws");
-        console.log("Attempting Connection...");
-
-        socket.onopen = () => {
-            console.log("Successfully Connected");
-            socket.send("Hi From the Client!")
-        };
-
-        socket.onclose = event => {
-            console.log("Socket Closed Connection: ", event);
-            socket.send("Client Closed!")
-        };
-
-        socket.onmessage = msg => {
-            console.log("Message Recieved: ", msg);
-        };
-
-        socket.onerror = error => {
-            console.log("Socket Error: ", error);
-        };
-    </script>
+    {{ template "websocket" "ptitbac"}} 
 </body>
-
+{{end }}
 
 </html>

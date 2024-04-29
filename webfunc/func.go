@@ -5,9 +5,11 @@ import (
 	. "GT/Connect"
 	"GT/games"
 	"database/sql"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"regexp"
 	"strconv"
 
 	"github.com/gorilla/websocket"
@@ -161,7 +163,7 @@ var letter string
 var arrayInput []games.Input
 
 func PtitbacPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/ptitBac.html")
+	temp, _ := template.ParseFiles("./pages/ptitBac.html", "./template")
 	letters := []string{}
 	if len(letter) == 0 {
 		letter = games.GenerateUniqueLetters(&letters)
@@ -175,11 +177,11 @@ func PtitbacPage(w http.ResponseWriter, r *http.Request) {
 	instrument := r.FormValue("instrument")
 	featuring := r.FormValue("featuring")
 	input := games.Input{
-		Artiste: artiste,
-		Album: album,
-		Groupe: groupe,
+		Artiste:    artiste,
+		Album:      album,
+		Groupe:     groupe,
 		Instrument: instrument,
-		Featuring: featuring,
+		Featuring:  featuring,
 	}
 	arrayInput = append(arrayInput, input)
 
