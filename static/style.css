@@ -10,14 +10,13 @@ button {
 
 .triangle {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50% -50%);
+    top: 0;
+    left: 0;
     width: 0;
     height: 0;
-    border-left: 25vw solid transparent;
-    border-right: 25vw solid transparent;
-    border-bottom: 43.3vw solid#6DD3CE; 
+    border-left: 36vw solid transparent;
+    border-right: 36vw solid transparent;
+    border-bottom: 62.4vw solid#6DD3CE; 
 }
 
 .container {
@@ -41,20 +40,24 @@ button {
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: space-between;
+    position: relative
 }
 
 .Deaf
 .La
 .Ptit_bac {
-    width: 5%; 
-    height: 5%; 
-    margin: 2vh; 
+    top: 0;
+    width: 20%; 
+    height: auto; 
     position: absolute;
 }
 
 .Deaf {
+    position: absolute;
     bottom: 0;
     left: 0;
+    width: 20%;
+    height: auto;
 }
 
 .La {
@@ -62,6 +65,9 @@ button {
 }
 
 .Ptit_bac {
+    position: absolute;
     bottom: 0;
     right: 0;
+    width: 20%;
+    height: auto;
 }

@@ -1,0 +1,41 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Level</title>
+<link rel="stylesheet" href="/static/difficulty.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="point" onclick="selectPoint(1)">
+        <div class="text">Slowed-down</div>
+    </div>
+    <div class="point" onclick="selectPoint(2)">
+        <div class="text">Normal</div>
+    </div>
+    <div class="point" onclick="selectPoint(3)">
+        <div class="text">Speed-up</div>
+    </div>
+    <div class="point" onclick="selectPoint(4)">
+        <div class="text">Reversed</div>
+    </div>
+</div>
+
+<script>
+function selectPoint(selectedPoint) {
+    var points = document.querySelectorAll('.point');
+    points.forEach(function(point, index) {
+        if (index === selectedPoint - 1) {
+            point.style.backgroundColor = '#6DD3CE'; // Remplir de gris
+        } else {
+            point.style.backgroundColor = '#fff'; // Réinitialiser la couleur
+        }
+    });
+}
+</script>
+
+</body>
+</html>

@@ -1,11 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlindTest</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blindtest</title>
+<style>
+  canvas {
+    display: block;
+    margin: auto;
+    border: 2px solid black;
+  }
+</style>
 </head>
 <body>
-    <div> test</div>
+
+<audio id="music" controls>
+  <source src="/static/audio/U2 - Magnificent.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+
+<canvas id="visualizer" width="800" height="200"></canvas>
+
+<script>
+window.onload = function() {
+  var ctx = document.getElementById('visualizer').getContext('2d');
+  var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  var analyser = audioCtx.createAnalyser();
+  var source = audioCtx.createMediaElementSource(document.getElementById('music'));
+  source.connect(analyser);
+  analyser.connect(audioCtx.destination);
+  analyser.fftSize = 256;
+  var bufferLength = analyser.frequencyBinCount;
+  var dataArray = new Uint8Array(bufferLength);
+
+  function draw() {
+    var WIDTH = document.getElementById('visualizer').width;
+    var HEIGHT = document.getElementById('visualizer').height;
+
+    requestAnimationFrame(draw);
+
+    analyser.getByteFrequencyData(dataArray);
+
+    ctx.fillStyle = 'rgb(0, 0, 0)';
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+    var barWidth = (WIDTH / bufferLength) * 2.5;
+    var barHeight;
+    var x = 0;
+
+    for(var i = 0; i < bufferLength; i++) {
+      barHeight = dataArray[i];
+
+      ctx.fillStyle = 'rgb(' + (barHeight+100) + ',50,50)';
+      ctx.fillRect(x,HEIGHT-barHeight/2,barWidth,barHeight/2);
+
+      x += barWidth + 1;
+    }
+  };
+
+  draw();
+};
+</script>
+
 </body>
 </html>
