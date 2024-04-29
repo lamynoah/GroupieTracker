@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlindTest</title>
+</head>
+<body>
+    <iframe id="spotifyPlayer" width="100%" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+    <label for="guess">Song Name</label>
+    <input type="text" id="inputGuess" name="inputGuess">
+    <script src="https://open.spotify.com/embed/iframe-api/v1" async>
+    </script>
+    <script>
+        function updateSpotifyTrack() {
+            fetch("/getTrackID")
+            .then(response => response.text())
+            .then(trackID => {
+                var iframe = document.getElementById("spotifyPlayer");
+                iframe.src = "https://open.spotify.com/embed/track/" + trackID;
+            })
+            .catch(error => {
+                console.error("Error fetching track ID:", error);
+            });
+        }
+        
+        updateSpotifyTrack();
+        setInterval(updateSpotifyTrack, 30000);
+        </script>
+        </script>
+</html>

@@ -3,6 +3,7 @@ package webfunc
 import (
 	. "GT/BDD"
 	. "GT/Connect"
+	"GT/api"
 	"database/sql"
 	"html/template"
 	"log"
@@ -86,7 +87,7 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 }
 
 func BlindTestPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/blindTest.html")
+	temp, _ := template.ParseFiles("./pages/blindtest.html")
 	temp.Execute(w, nil)
 }
 
@@ -117,7 +118,7 @@ func WebSocket(w http.ResponseWriter, r *http.Request) {
 	reader(ws)
 }
 
-func TestPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/testPage.html")
-	temp.Execute(w, nil)
+func GetTrackID(w http.ResponseWriter, r *http.Request) {
+	trackID := api.RequestSong()
+	w.Write([]byte(trackID))
 }

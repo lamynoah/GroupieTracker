@@ -23,7 +23,7 @@ func GetAccessToken() string {
 }
 
 //lint:ignore U1000 reason
-func requestSong() {
+func RequestSong() string {
 	accessToken := GetAccessToken()
 	playlistID := RequestPlaylist()
 	trackID := selectRandomTrack(playlistID)
@@ -53,9 +53,10 @@ func requestSong() {
 	for _, artist := range trackData.Artists {
 		fmt.Println("-", artist.Name)
 	}
+
+	return trackID
 }
 
-//lint:ignore U1000 reason
 func selectRandomTrack(playlistID string) string {
 	tracks := extractTrackID(playlistID)
 
@@ -69,7 +70,6 @@ func selectRandomTrack(playlistID string) string {
 	return tracks[randomIndex]
 }
 
-//lint:ignore U1000 reason
 func extractTrackID(playlistID string) []string {
 	accessToken := GetAccessToken()
 	url := fmt.Sprintf("https://api.spotify.com/v1/playlists/%s", playlistID)
