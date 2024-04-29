@@ -12,29 +12,7 @@
 <body>
     <a href="/signin"><button>sign in</button></a>
     <a href="/login"><button>log in</button></a>
-    <script>
-        let socket = new WebSocket("ws://10.70.1.187/ws");
-        console.log("Attempting Connection...");
-
-        socket.onopen = () => {
-            console.log("Successfully Connected");
-            socket.send("Hi From the Client!")
-        };
-
-        socket.onclose = event => {
-            console.log("Socket Closed Connection: ", event);
-            socket.send("Client Closed!")
-        };
-
-        socket.onmessage = msg => {
-            console.log("Message Recieved: ", msg);
-        };
-
-        socket.onerror = error => {
-            console.log("Socket Error: ", error);
-        };
-
-    </script>
+    {{template "socket"}}
 </body>
 
 </html>

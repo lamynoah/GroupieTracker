@@ -1,8 +1,9 @@
 package bdd
 
-
-import ("database/sql"
-_ "github.com/mattn/go-sqlite3")
+import (
+	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
+)
 
 func CreateUserTable() error {
 

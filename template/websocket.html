@@ -1,0 +1,35 @@
+{{define "socket"}}
+
+
+<script>
+// {{with .}}
+    console.log("{{.}}")
+    let socket = new WebSocket("ws://10.70.1.187/ws/{{.}}");
+    console.log("ws://10.70.1.187/ws/{{.}}");
+// {{else}}
+    console.log("no")
+    let socket = new WebSocket("ws://10.70.1.187/ws");
+    console.log("ws://10.70.1.187/ws");
+// {{end}}
+
+    console.log("Attempting Connection...");
+    socket.onopen = () => {
+        console.log("Successfully Connected");
+        socket.send("Hi From the Client!")
+    };
+
+    socket.onclose = event => {
+        console.log("Socket Closed Connection: ", event);
+        socket.send("Client Closed!")
+    };
+
+    socket.onmessage = msg => {
+        console.log("Message Recieved: ", msg);
+    };
+
+    socket.onerror = error => {
+        console.log("Socket Error: ", error);
+    };
+
+</script>
+{{end}}

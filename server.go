@@ -13,17 +13,23 @@ func main() {
 	// bdd.CreateRoomsTable()
 	// bdd.CreateRoomUsersTable()
 	// bdd.CreateGamesTable()
-	http.HandleFunc("/selectGame", webfunc.Select)
+	http.HandleFunc("/", webfunc.HomePage)
+	// user managing routes
 	http.HandleFunc("/signin", webfunc.Signin)
 	http.HandleFunc("/createUser", webfunc.CreateUser)
 	http.HandleFunc("/login", webfunc.Login)
 	http.HandleFunc("/loginUser", webfunc.Connect)
-	http.HandleFunc("/settingBacPage", webfunc.SettingBacPage)
+	// games routes
+	http.HandleFunc("/selectGame", webfunc.Select)
 	http.HandleFunc("/blindTest", webfunc.BlindTestPage)
 	http.HandleFunc("/deafTest", webfunc.DeafTestPage)
-	http.HandleFunc("/ptitbac", webfunc.PtitbacPage)
-	http.HandleFunc("/", webfunc.HomePage)
+	http.HandleFunc("/ptitBac", webfunc.PtitbacPage)
+	http.HandleFunc("/settingBacPage", webfunc.SettingBacPage)
+	// websockets routes
 	http.HandleFunc("/ws", webfunc.WebSocket)
+	http.HandleFunc("/ws/blindTest", webfunc.WebSocket)
+	http.HandleFunc("/ws/deafTest", webfunc.WebSocket)
+	http.HandleFunc("/ws/ptitBac", webfunc.WebSocket)
 
 	//conn, _ := net.Dial("tcp", "google.com:http")
 	//fmt.Println(conn.LocalAddr())
