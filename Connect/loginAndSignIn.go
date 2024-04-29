@@ -2,10 +2,33 @@ package connect
 
 import (
 	"database/sql"
-	"fmt"
-	"golang.org/x/crypto/bcrypt"
+	"net/http"
+	"strconv"
+
 	_ "github.com/mattn/go-sqlite3"
+	"golang.org/x/crypto/bcrypt"
 )
+
+func UserCookies(w http.ResponseWriter, id int) {
+	cookie := http.Cookie{
+		Name:  "Id",
+		Value: strconv.Itoa(id),
+		Path:  "/",
+	}
+	http.SetCookie(w, &cookie)
+}
+
+func Islogin(r *http.Request) (bool, int) {
+	cookie, err := r.Cookie("Id")
+	if err != nil {
+		return false, 0
+	}
+	id, err := strconv.Atoi(cookie.Value)
+	if err != nil {
+		return false, 0
+	}
+	return true, id
+}
 
 func HashPassword(password string) (string, error) {
 	hasedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -68,32 +91,45 @@ func QueryPasswordUsers(db *sql.DB) ([]string, error) {
 	return Passwords, nil
 }
 
+func QueryUserId(usernameOrEmail string) (int, error) {
+	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	if err != nil {
+		return 0, err
+	}
+	defer db.Close()
+
+	query := "Select UserID FROM Users WHERE Username = ? OR Email = ?"
+	var id int
+	err = db.QueryRow(query, usernameOrEmail, usernameOrEmail).Scan(&id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, err
+		}
+		return 0, err
+	}
+	return id, nil
+}
+
 type User struct {
 	email    string
 	password string
 }
 
 func GetAllUsersDetails(db *sql.DB) (map[string]User, error) {
-	detailsUsers := make(map[string]User)
-	usernames, err := QueryNameUsers(db)
+	rows, err := db.Query("SELECT Username, Email, Password FROM Users")
 	if err != nil {
 		return nil, err
 	}
-	emails, err := QueryEmailUsers(db)
-	if err != nil {
-		return nil, err
-	}
-	passwords, err := QueryPasswordUsers(db)
-	if err != nil {
-		return nil, err
-	}
-	for i, username := range usernames {
-		detailsUsers[username] = User{
-			emails[i],
-			passwords[i],
+	defer rows.Close()
+	users := make(map[string]User)
+	for rows.Next() {
+		var datas struct{ Username, Email, Password string }
+		if err := rows.Scan(&datas.Username, &datas.Email, &datas.Password); err != nil {
+			return nil, err
 		}
+		users[datas.Username] = User{datas.Email, datas.Password}
 	}
-	return detailsUsers, nil
+	return users, nil
 }
 
 func IsMatch(usernameOrEmail, password string, db *sql.DB) (bool, error) {
@@ -102,12 +138,12 @@ func IsMatch(usernameOrEmail, password string, db *sql.DB) (bool, error) {
 		return false, err
 	}
 	for userName, userValue := range users {
-		fmt.Println(userName, userValue)
 		if usernameOrEmail == userName || usernameOrEmail == userValue.email {
-			if password == userValue.password {
+			err := bcrypt.CompareHashAndPassword([]byte(userValue.password), []byte(password))
+			if err == nil {
 				return true, nil
 			} else {
-				return false, fmt.Errorf("Incorrect password: " + password + " != " + userValue.password)
+				return false, err
 			}
 		}
 	}
