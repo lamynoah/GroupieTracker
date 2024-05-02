@@ -27,19 +27,20 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 }
-var ptitBacConns = []*websocket.Conn{}
+
+var ptitBacConns = ConnSet{}
 
 type PtitBacData struct {
 	// RoomName     string
 	RoomLink     string
-	PtitBacConns []*websocket.Conn
+	PtitBacConns ConnSet
 	Data         string
 }
 
 var arrayRoom = map[string]*PtitBacData{}
 
 func reader(conn *websocket.Conn, game string) {
-	ptitBacConns = append(ptitBacConns, conn)
+	ptitBacConns.Add(conn)
 	if len(game) > 4 {
 		game = game[4:]
 	}
@@ -63,7 +64,7 @@ func reader(conn *websocket.Conn, game string) {
 			}
 		}
 	case "ptitBac":
-		ptitBacConns = append(ptitBacConns, conn)
+		ptitBacConns.Add(conn)
 		for {
 			messageType, p, err := conn.ReadMessage()
 			if err != nil {
@@ -72,7 +73,7 @@ func reader(conn *websocket.Conn, game string) {
 			}
 			if string(p) == "Connected" {
 				fmt.Println("je suis la", ptitBacConns)
-				for _, v := range ptitBacConns {
+				for v := range ptitBacConns {
 					if err := v.WriteMessage(messageType, []byte("start game")); err != nil {
 						log.Println(err)
 						return
@@ -98,15 +99,15 @@ func reader(conn *websocket.Conn, game string) {
 				log.Println(err)
 				return
 			}
-			fmt.Println(arrayRoom)
-			fmt.Println(jsonMsg)
 			room := arrayRoom[jsonMsg.Id]
-			fmt.Println("before :", room.PtitBacConns)
-			room.PtitBacConns = append(room.PtitBacConns, conn)
-			fmt.Println("after :", room.PtitBacConns)
+			room.PtitBacConns.Add(conn)
+			defaultHandler := conn.CloseHandler()
+			conn.SetCloseHandler(func(code int, text string) error {
+				room.PtitBacConns.Delete(conn)
+				return defaultHandler(code, text)
+			})
 			if jsonMsg.Start {
-				fmt.Println("je suis la", room.PtitBacConns)
-				for _, v := range room.PtitBacConns {
+				for v := range room.PtitBacConns {
 					if err := v.WriteJSON("start game"); err != nil {
 						log.Println(err)
 						return
@@ -208,10 +209,6 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 	usernameOrEmail := r.FormValue("username")
 	password := r.FormValue("password")
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 	result, err := IsMatch(usernameOrEmail, password, db)
 	if !result || err != nil {
 		fmt.Println(result, err)
@@ -263,10 +260,10 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	defer db.Close()
-	games.CreateNewRoom(db, room)
+	InsertRooms(room.Created_by, room.Max_players, room.Name, room.Id_game)
 	arrayRoom[room.Name] = &PtitBacData{
 		"/loadingPage?room=" + room.Name,
-		[]*websocket.Conn{},
+		ConnSet{},
 		"",
 	}
 	http.Redirect(w, r, "/loadingPage?room="+room.Name, http.StatusFound)
@@ -274,6 +271,29 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 
 func Loading(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/loading.html", "./template/websocket.html")
+	// Si nbplayer == max_player alors on peut plus se connecter  et nous renvoie sur le lobby
+	r.ParseForm()
+	roomId := r.FormValue("room")
+	fmt.Println(roomId)
+	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+	query := "SELECT max_player FROM ROOMS WHERE name = ?"
+	row := db.QueryRow(query, roomId)
+
+	var maxPlayer int
+	err = row.Scan(&maxPlayer)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("max player =", maxPlayer)
+	if len(arrayRoom[roomId].PtitBacConns) > maxPlayer {
+		http.Redirect(w,r,"/lobby", http.StatusFound)
+		return
+	}
+
 	temp.Execute(w, nil)
 }
 

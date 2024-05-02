@@ -1,9 +1,5 @@
 package games
 
-import (
-	"database/sql"
-)
-
 type ROOM struct {
 	Created_by  int
 	Max_players int
@@ -16,11 +12,3 @@ type Data struct {
 	ROOMS   []ROOM
 }
 
-func CreateNewRoom(db *sql.DB, room ROOM) error {
-	query := `INSERT INTO ROOMS (created_by, max_players, name, id_game) Values (?,?,?) `
-	_, err := db.Exec(query, room.Created_by, room.Max_players, room.Name, room.Id_game)
-	if err != nil {
-		return err
-	}
-	return nil
-}
