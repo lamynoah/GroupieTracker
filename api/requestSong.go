@@ -22,7 +22,6 @@ func GetAccessToken() string {
 	return accessToken
 }
 
-//lint:ignore U1000 reason
 func RequestSong() string {
 	accessToken := GetAccessToken()
 	playlistID := RequestPlaylist()
