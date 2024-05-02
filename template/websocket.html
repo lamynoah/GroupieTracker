@@ -2,15 +2,16 @@
 
 
 <script>
-// {{with .}}
+    let socket;
+    // {{with .}}
     console.log("{{.}}")
-    let socket = new WebSocket("ws://10.70.1.187/ws/{{.}}");
+    socket = new WebSocket("ws://localhost:8080/ws/{{.}}");
     console.log("ws://10.70.1.187/ws/{{.}}");
-// {{else}}
+    // {{else}}
     console.log("no")
-    let socket = new WebSocket("ws://10.70.1.187/ws");
+    socket = new WebSocket("ws://10.70.1.187/ws");
     console.log("ws://10.70.1.187/ws");
-// {{end}}
+    // {{end}}
 
     console.log("Attempting Connection...");
     socket.onopen = () => {

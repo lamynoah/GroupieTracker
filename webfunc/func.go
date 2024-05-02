@@ -15,12 +15,35 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// type ptitBac struct {
+// 	Artiste    string
+// 	Album      string
+// 	Groupe     string
+// 	Instrument string
+// 	Featuring  string
+// }
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 }
 
+var ptitBacConns = ConnSet{}
+
+type PtitBacData struct {
+	// RoomName     string
+	RoomLink     string
+	PtitBacConns ConnSet
+	Data         string
+}
+
+var arrayRoom = map[string]*PtitBacData{}
+
 func reader(conn *websocket.Conn, game string) {
+	ptitBacConns.Add(conn)
+	if len(game) > 4 {
+		game = game[4:]
+	}
 	switch game {
 	case "blindTest":
 		fmt.Println("game:", game)
@@ -41,18 +64,55 @@ func reader(conn *websocket.Conn, game string) {
 			}
 		}
 	case "ptitBac":
+		ptitBacConns.Add(conn)
 		for {
 			messageType, p, err := conn.ReadMessage()
 			if err != nil {
 				log.Println(err)
 				return
 			}
-
+			if string(p) == "Connected" {
+				fmt.Println("je suis la", ptitBacConns)
+				for v := range ptitBacConns {
+					if err := v.WriteMessage(messageType, []byte("start game")); err != nil {
+						log.Println(err)
+						return
+					}
+				}
+			}
 			log.Println(string(p))
 
 			if err := conn.WriteMessage(messageType, p); err != nil {
 				log.Println(err)
 				return
+			}
+		}
+	case "loading":
+		jsonMsg := &struct {
+			Id    string
+			Start bool
+		}{}
+		fmt.Println("all connections :", ptitBacConns)
+		for {
+			err := conn.ReadJSON(jsonMsg)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			room := arrayRoom[jsonMsg.Id]
+			room.PtitBacConns.Add(conn)
+			defaultHandler := conn.CloseHandler()
+			conn.SetCloseHandler(func(code int, text string) error {
+				room.PtitBacConns.Delete(conn)
+				return defaultHandler(code, text)
+			})
+			if jsonMsg.Start {
+				for v := range room.PtitBacConns {
+					if err := v.WriteJSON("start game"); err != nil {
+						log.Println(err)
+						return
+					}
+				}
 			}
 		}
 	default:
@@ -63,6 +123,11 @@ func reader(conn *websocket.Conn, game string) {
 func Select(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/selectGame.html")
 	temp.Execute(w, nil)
+}
+
+func Lobby(w http.ResponseWriter, r *http.Request) {
+	temp, _ := template.ParseFiles("./pages/lobby.html")
+	temp.Execute(w, arrayRoom)
 }
 
 var dataError = struct {
@@ -144,10 +209,6 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 	usernameOrEmail := r.FormValue("username")
 	password := r.FormValue("password")
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 	result, err := IsMatch(usernameOrEmail, password, db)
 	if !result || err != nil {
 		fmt.Println(result, err)
@@ -174,6 +235,40 @@ func DeafTestPage(w http.ResponseWriter, r *http.Request) {
 	temp.Execute(w, nil)
 }
 
+func CreateRoom(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	cookie, err := r.Cookie("Id")
+	if err != nil {
+		log.Fatal(err)
+	}
+	id, err := strconv.Atoi(cookie.Value)
+	if err != nil {
+		log.Fatal(err)
+	}
+	max_player, err := strconv.Atoi(r.FormValue("playersNumber"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	room := games.ROOM{
+		Created_by:  id,
+		Max_players: max_player,
+		Name:        r.FormValue("name"),
+		Id_game:     3,
+	}
+	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+	InsertRooms(room.Created_by, room.Max_players, room.Name, room.Id_game)
+	arrayRoom[room.Name] = &PtitBacData{
+		"/loadingPage?room=" + room.Name,
+		ConnSet{},
+		"",
+	}
+	http.Redirect(w, r, "/loadingPage?room="+room.Name, http.StatusFound)
+}
+
 
 func Result(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
@@ -196,10 +291,30 @@ func Result(w http.ResponseWriter, r *http.Request) {
 
 func Loading(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/loading.html", "./template/websocket.html")
+	// Si nbplayer == max_player alors on peut plus se connecter  et nous renvoie sur le lobby
 	r.ParseForm()
-	r.FormValue("playersNumber")
-	r.FormValue("name")
-	time, _ := strconv.Atoi(r.FormValue("timerSeconds"))
+	roomId := r.FormValue("room")
+	fmt.Println(roomId)
+	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+	query := "SELECT max_player FROM ROOMS WHERE name = ?"
+	row := db.QueryRow(query, roomId)
+
+	var maxPlayer int
+	err = row.Scan(&maxPlayer)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("max player =", maxPlayer)
+	if len(arrayRoom[roomId].PtitBacConns) > maxPlayer {
+		http.Redirect(w,r,"/lobby", http.StatusFound)
+		return
+	}
+
+	
 	temp.Execute(w, nil)
 }
 
@@ -212,7 +327,7 @@ func PtitbacPage(w http.ResponseWriter, r *http.Request) {
 	if len(letter) == 0 {
 		letter = games.GenerateUniqueLetters(&letters)
 	}
-	
+	time, _ := strconv.Atoi(r.FormValue("timerSeconds"))
 	go games.StartTimer(time)
 	temp.Execute(w, struct{Letter string; Isplaying bool}{letter, true})
 }
@@ -237,9 +352,5 @@ func WebSocket(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Client connected successfully")
 	uri := r.RequestURI
-	if len(uri) >= 4 {
-		reader(ws, uri[4:])
-	} else {
-		reader(ws, uri)
-	}
+	reader(ws, uri)
 }
