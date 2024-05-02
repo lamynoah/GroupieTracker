@@ -21,13 +21,13 @@ func InsertUser(username, email, password string) error {
 	return nil
 }
 
-func InsertRooms(id int, created_by int, max_player int, name string, id_game int) error {
+func InsertRooms(created_by int, max_player int, name string, id_game int) error {
 	db, err := sql.Open("sqlite3", "./BDD/table.db")
 	if err != nil {
 		return err
 	}
 	defer db.Close()
-	insertQuery := `INSERT INTO ROOMS(created_by, max_player,name, d_game) Values(?,?,?,?)`
+	insertQuery := `INSERT INTO ROOMS (created_by, max_player, name, id_game) Values(?,?,?,?)`
 	_, err = db.Exec(insertQuery, created_by, max_player, name, id_game)
 	if err != nil {
 		return err
