@@ -34,10 +34,8 @@ func RequestPlaylist() string {
 //lint:ignore U1000 reason
 func selectRandomPlaylist() string {
 	playlistID := []string{
-		"5Gu2ik0W12YoOexbFzYMTK",
-		"37i9dQZF1DX188IBQOaMiA",
-		"37i9dQZF1DXacPj7eARo6k",
-		"3B8dwKgIMb0yNvvrEeqgyR",
+		"16KcsJ0bML5NoxCptRd3SK",
+		"0FaEfQoznBqCPbhlUFFNlO",
 	}
 
 	rand.Seed((time.Now().UnixNano()))

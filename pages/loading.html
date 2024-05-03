@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div> ATTENDS </div>
+    <!-- <a href="/ptitBac.html"><button> Start Game</button></a> -->
+    <button onclick="socket.send(JSON.stringify({ Id:getRoomId(), Start: true }))">Start all</button>
+    {{template "socket" "loading"}}
+    <script>
+        const getRoomId = () => new URLSearchParams(window.location.search).get("room")
+        socket.onopen = () => {
+            console.log(JSON.stringify({ Id: getRoomId(), Start: false }));
+            socket.send(JSON.stringify({ Id: getRoomId(), Start: false }))
+        };
+        socket.onmessage = msg => {
+            console.log(msg.data)
+            if (JSON.parse(msg.data) === "start game") {
+                window.location.replace("http://localhost:8080/ptitBac");
+            }
+        }
+    </script>
+</body>
+
+</html>

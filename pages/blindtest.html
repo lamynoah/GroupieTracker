@@ -7,25 +7,28 @@
 </head>
 <body>
     <iframe id="spotifyPlayer" width="100%" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
-    <label for="guess">Song Name</label>
+    <label for="guess">Titre : </label>
     <input type="text" id="inputGuess" name="inputGuess">
+    <button>Validé</button>
     <script src="https://open.spotify.com/embed/iframe-api/v1" async>
     </script>
     <script>
-        function updateSpotifyTrack() {
-            fetch("/getTrackID")
-            .then(response => response.text())
-            .then(trackID => {
-                var iframe = document.getElementById("spotifyPlayer");
-                iframe.src = "https://open.spotify.com/embed/track/" + trackID;
-            })
-            .catch(error => {
-                console.error("Error fetching track ID:", error);
-            });
-        }
-        
-        updateSpotifyTrack();
-        setInterval(updateSpotifyTrack, 30000);
-        </script>
-        </script>
+       function updateSpotifyTrack() {
+        fetch("/getTrackID")
+        .then(response => response.text())
+        .then(trackID => {
+            var iframe = document.getElementById("spotifyPlayer");
+            iframe.src = "https://open.spotify.com/embed/track/" + trackID + "?autoplay=true";
+            // setTimeout(function() {
+            //     iframe.src = "";
+            // }, Math.floor(Math.random() * (15000 - 5000 + 1)) + 5000);
+        })
+        .catch(error => {
+            console.error("Error fetching track ID:", error);
+        });
+    }
+    updateSpotifyTrack();
+    // setInterval(updateSpotifyTrack, 30000)
+    </script>
+    </script>
 </html>

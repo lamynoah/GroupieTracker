@@ -1,8 +1,9 @@
 package bdd
 
-
-import ("database/sql"
-_ "github.com/mattn/go-sqlite3")
+import (
+	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
+)
 
 func CreateUserTable() error {
 
@@ -35,7 +36,7 @@ func CreateRoomsTable() error {
 
 	createTableQuery := `
         CREATE TABLE IF NOT EXISTS ROOMS (
-            id INTEGER PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             created_by INTEGER NOT NULL,
             max_player INTEGER NOT NULL,
             name TEXT NOT NULL,
@@ -88,7 +89,7 @@ func CreateGamesTable() error {
 
 	createTableQuery := `
         CREATE TABLE IF NOT EXISTS GAMES (
-            id INTEGER PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL
         );
     `
