@@ -13,7 +13,7 @@
     <a href="/settingBacPage"><button>New ROOM</button></a>
     <ul class="list">
         {{range $i, $v := .}}
-        {{if not $v.IsStarted}} <li><a href="{{$v.RoomLink}}">{{$i}}</a></li> {{end}}
+        {{if not $v.IsStarted}} <li><a href="loadingPage{{$v.RoomLink}}">{{$i}}</a></li> {{end}}
         {{end}}
     </ul>
 

@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
@@ -37,6 +38,7 @@ type PtitBacData struct {
 	Letter       string
 	IsStarted    bool
 	Inputs       map[string]games.Input
+	Wg           sync.WaitGroup
 }
 
 var arrayRoom = map[string]*PtitBacData{}
@@ -66,27 +68,33 @@ func reader(conn *websocket.Conn, game string) {
 			}
 		}
 	case "ptitBac":
-		ptitBacConns.Add(conn)
+		jsonMsg := &struct {
+			Id   string
+			Done bool
+		}{}
+		fmt.Println("all connections :", ptitBacConns)
 		for {
-			messageType, p, err := conn.ReadMessage()
+			err := conn.ReadJSON(jsonMsg)
 			if err != nil {
 				log.Println(err)
 				return
 			}
-			if string(p) == "Connected" {
-				fmt.Println("je suis la", ptitBacConns)
-				for v := range ptitBacConns {
-					if err := v.WriteMessage(messageType, []byte("start game")); err != nil {
+			room := arrayRoom[jsonMsg.Id]
+			room.PtitBacConns.Add(conn)
+			room.Wg.Add(1)
+			defaultHandler := conn.CloseHandler()
+			conn.SetCloseHandler(func(code int, text string) error {
+				room.PtitBacConns.Delete(conn)
+				return defaultHandler(code, text)
+			})
+			if jsonMsg.Done {
+				room.IsStarted = true
+				for v := range room.PtitBacConns {
+					if err := v.WriteJSON("start game"); err != nil {
 						log.Println(err)
 						return
 					}
 				}
-			}
-			log.Println(string(p))
-
-			if err := conn.WriteMessage(messageType, p); err != nil {
-				log.Println(err)
-				return
 			}
 		}
 	case "loading":
@@ -268,22 +276,24 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	letter = games.GenerateUniqueLetters(&letters)
 
 	arrayRoom[room.Name] = &PtitBacData{
-		"/loadingPage?room=" + room.Name,
+		"?room=" + room.Name,
 		ConnSet{},
 		letter,
 		false,
 		map[string]games.Input{},
+		sync.WaitGroup{},
 	}
 	http.Redirect(w, r, "/loadingPage?room="+room.Name, http.StatusFound)
 }
 
 func Result(w http.ResponseWriter, r *http.Request) {
+	temp, _ := template.ParseFiles("./pages/result.html", "./template/websocket.html")
 	r.ParseForm()
 	cookie, err := r.Cookie("Id")
 	if err != nil {
 		log.Println(err)
 	}
-	userName, err := QueryUserName(cookie.Value)
+	username, err := QueryUserName(cookie.Value)
 	if err != nil {
 		log.Println(err)
 	}
@@ -302,8 +312,18 @@ func Result(w http.ResponseWriter, r *http.Request) {
 	}
 	r.ParseForm()
 	room := arrayRoom[r.FormValue("room")]
-	room.Inputs[userName] = input
+	DisplayResult(room, input, username)
+
+	// room.Wg.Wait()
+
+	// room.Inputs[username] = input
 	// http.Redirect(w,r, "/")
+	temp.Execute(w, room)
+}
+
+func DisplayResult(room *PtitBacData, input games.Input, username string) {
+	defer room.Wg.Done()
+	room.Inputs[username] = input
 }
 
 func Loading(w http.ResponseWriter, r *http.Request) {
@@ -341,7 +361,8 @@ func PtitbacPage(w http.ResponseWriter, r *http.Request) {
 	temp.Execute(w, struct {
 		Letter    string
 		IsPlaying bool
-	}{arrayRoom[r.FormValue("room")].Letter, true})
+		RoomId    string
+	}{arrayRoom[r.FormValue("room")].Letter, true, r.FormValue("room")})
 }
 
 func SettingBacPage(w http.ResponseWriter, r *http.Request) {

@@ -7,11 +7,13 @@
     <title>PetitBac</title>
 </head>
 {{if .IsPlaying}}
+
 <body>
-    <h1> Lettre : {{.Letter}} </h1>
-    <form action="/result?room={{.RoomLink}}" method="post">
+    <h1> Lettre : {{.Letter}}</h1>
+    <form action="/result?room={{.RoomId}}" method="post">
         <label for="artiste">Artiste:</label>
-        <input placeholder="{{.Letter}}..." type="text" name="artiste" id="artiste" autofocus autocomplete="off" required /><br>
+        <input placeholder="{{.Letter}}..." type="text" name="artiste" id="artiste" autofocus autocomplete="off"
+            required /><br>
 
         <label for="album">Album:</label>
         <input placeholder="{{.Letter}}..." type="text" name="album" id="album" autocomplete="off" required /><br>
@@ -20,13 +22,34 @@
         <input placeholder="{{.Letter}}..." type="text" name="groupe" id="groupe" autocomplete="off" required /><br>
 
         <label for="instrument">Instrument de musique:</label>
-        <input placeholder="{{.Letter}}..." type="text" name="instrument" id="instrument" autocomplete="off" required /><br>
+        <input placeholder="{{.Letter}}..." type="text" name="instrument" id="instrument" autocomplete="off"
+            required /><br>
 
         <label for="featuring">Featuring:</label>
-        <input placeholder="{{.Letter}}..." type="text" name="featuring" id="featuring" autocomplete="off" required /><br>
-        <input type="submit" value=" FINISH">
+        <input placeholder="{{.Letter}}..." type="text" name="featuring" id="featuring" autocomplete="off"
+            required /><br>
+        <button onclick="done()">FINISH</button>
     </form>
-    {{template "socket" "ptitBac"}} 
+    {{template "socket" "ptitBac"}}
+    <script>
+        const getRoomId = () => new URLSearchParams(window.location.search).get("room")
+        socket.onopen = () => {
+            console.log(JSON.stringify({ Id: getRoomId(), Done: false }));
+            socket.send(JSON.stringify({ Id: getRoomId(), Done: false }))
+        };
+        socket.onmessage = msg => {
+            console.log(msg.data)
+            if (JSON.parse(msg.data) === "end round") {
+                window.location.replace("http://localhost:8080/result" + window.location.search);
+            }
+        }
+        let done = async () => {
+            socket.send(JSON.stringify({ Id: getRoomId(), Done: true }))
+            const form = document.querySelector("form").submit()
+            // const formData = new FormData(form);
+            // window.location.replace("http://localhost:8080/result" + window.location.search);
+        }
+    </script>
 </body>
 {{end}}
 
