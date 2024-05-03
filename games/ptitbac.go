@@ -7,8 +7,7 @@ import (
 )
 
 func GenererLetters() string {
-	letters := "abcdefghijklmnopqrstuvwxyz"
-	rand.Seed(time.Now().UnixNano())
+	letters := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	index := rand.Intn(len(letters))
 	return string(letters[index])
 }
@@ -63,13 +62,4 @@ func IsElementUnique(arrayInput []Input) {
 	// {"noah":2,"omar":1}
 }
 
-
-
-
-
-
 // artiste = noah && artiste = noah  == 1 points
-
-
-
-

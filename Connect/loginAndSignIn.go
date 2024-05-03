@@ -110,6 +110,25 @@ func QueryUserId(usernameOrEmail string) (int, error) {
 	return id, nil
 }
 
+func QueryUserName(userId string) (string, error) {
+	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	if err != nil {
+		return "", err
+	}
+	defer db.Close()
+
+	query := "Select Username FROM Users WHERE UserId = ?"
+	var userName string
+	err = db.QueryRow(query, userId).Scan(&userName)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", err
+		}
+		return "", err
+	}
+	return userName, nil
+}
+
 type User struct {
 	email    string
 	password string

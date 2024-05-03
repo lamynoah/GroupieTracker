@@ -21,7 +21,7 @@
         socket.onmessage = msg => {
             console.log(msg.data)
             if (JSON.parse(msg.data) === "start game") {
-                window.location.replace("http://localhost:8080/ptitBac");
+                window.location.replace("http://localhost:8080/ptitBac"+window.location.search);
             }
         }
     </script>

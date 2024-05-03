@@ -28,12 +28,14 @@ func main() {
 	http.HandleFunc("/lobby", webfunc.Lobby)
 	http.HandleFunc("/loadingPage", webfunc.Loading)
 	http.HandleFunc("/createRoom", webfunc.CreateRoom)
+	http.HandleFunc("/result", webfunc.Result)
 	// websockets routes
 	http.HandleFunc("/ws", webfunc.WebSocket)
 	http.HandleFunc("/ws/blindTest", webfunc.WebSocket)
 	http.HandleFunc("/ws/deafTest", webfunc.WebSocket)
 	http.HandleFunc("/ws/ptitBac", webfunc.WebSocket)
 	http.HandleFunc("/ws/loading", webfunc.WebSocket)
+	http.HandleFunc("/ws/result", webfunc.WebSocket)
 
 	//conn, _ := net.Dial("tcp", "google.com:http")
 	//fmt.Println(conn.LocalAddr())
