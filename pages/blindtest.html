@@ -12,6 +12,28 @@
     <button>Validé</button>
     <script src="https://open.spotify.com/embed/iframe-api/v1" async>
     </script>
+      <script>
+        let socket = new WebSocket("ws://localhost:8080/ws");
+        console.log("Attempting Connection...");
+
+        socket.onopen = () => {
+            console.log("Successfully Connected");
+            socket.send("Hi From the Client!")
+        };
+
+        socket.onclose = event => {
+            console.log("Socket Closed Connection: ", event);
+            socket.send("Client Closed!")
+        };
+
+        socket.onmessage = msg => {
+            console.log("Message Recieved: ", msg);
+        };
+
+        socket.onerror = error => {
+            console.log("Socket Error: ", error);
+        };
+    </script>
     <script>
        function updateSpotifyTrack() {
         fetch("/getTrackID")

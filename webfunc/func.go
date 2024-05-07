@@ -22,12 +22,19 @@ var upgrader = websocket.Upgrader{
 }
 
 var ptitBacConns = ConnSet{}
+var blindTestConns = ConnSet{}
 
 type PtitBacData struct {
 	// RoomName     string
 	RoomLink     string
 	PtitBacConns ConnSet
 	Data         string
+}
+
+type BlindTestData struct {
+	RoomLink       string
+	BlindTestConns ConnSet
+	Data           string
 }
 
 var arrayRoom = map[string]*PtitBacData{}
@@ -40,6 +47,28 @@ func reader(conn *websocket.Conn, game string) {
 	switch game {
 	case "blindTest":
 		fmt.Println("game:", game)
+		for {
+			messageType, p, err := conn.ReadMessage()
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			if string(p) == "Connected" {
+				fmt.Println("je suis la", blindTestConns)
+				for v := range blindTestConns {
+					if err := v.WriteMessage(messageType, []byte("start game")); err != nil {
+						log.Println(err)
+						return
+					}
+				}
+			}
+			log.Println(string(p))
+
+			if err := conn.WriteMessage(messageType, p); err != nil {
+				log.Println(err)
+				return
+			}
+		}
 	case "deafTest":
 		fmt.Println("game:", game)
 		for {
@@ -220,6 +249,14 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 
 func BlindtestPage(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/blindTest.html")
+	time, _ := strconv.Atoi(r.FormValue("timerSeconds"))
+	go games.StartTimer(time)
+	temp.Execute(w, nil)
+}
+
+func SettingBacPage(w http.ResponseWriter, r *http.Request) {
+	temp, _ := template.ParseFiles("./pages/settingPagesPtitBac.html")
+
 	temp.Execute(w, nil)
 }
 
@@ -307,8 +344,8 @@ func PtitbacPage(w http.ResponseWriter, r *http.Request) {
 	temp.Execute(w, letter)
 }
 
-func SettingBacPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/settingPagesPtitBac.html")
+func SettingBlindTest(w http.ResponseWriter, r *http.Request) {
+	temp, _ := template.ParseFiles("./pages/settingBlindTest.html")
 
 	temp.Execute(w, nil)
 }
