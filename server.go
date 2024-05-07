@@ -36,7 +36,6 @@ func main() {
 	http.HandleFunc("/ws/ptitBac", webfunc.WebSocket)
 	http.HandleFunc("/ws/loading", webfunc.WebSocket)
 	http.HandleFunc("/ws/result", webfunc.WebSocket)
-
 	//conn, _ := net.Dial("tcp", "google.com:http")
 	//fmt.Println(conn.LocalAddr())
 

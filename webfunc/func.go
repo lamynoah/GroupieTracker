@@ -37,7 +37,7 @@ type PtitBacData struct {
 	PtitBacConns ConnSet
 	Letter       string
 	IsStarted    bool
-	Inputs       map[string]games.Input
+	Ui           UsersInputs
 	Wg           sync.WaitGroup
 }
 
@@ -72,7 +72,6 @@ func reader(conn *websocket.Conn, game string) {
 			Id   string
 			Done bool
 		}{}
-		fmt.Println("all connections :", ptitBacConns)
 		for {
 			err := conn.ReadJSON(jsonMsg)
 			if err != nil {
@@ -82,6 +81,7 @@ func reader(conn *websocket.Conn, game string) {
 			room := arrayRoom[jsonMsg.Id]
 			room.PtitBacConns.Add(conn)
 			room.Wg.Add(1)
+			// fmt.Println("room connections :", room.PtitBacConns)
 			defaultHandler := conn.CloseHandler()
 			conn.SetCloseHandler(func(code int, text string) error {
 				room.PtitBacConns.Delete(conn)
@@ -90,7 +90,7 @@ func reader(conn *websocket.Conn, game string) {
 			if jsonMsg.Done {
 				room.IsStarted = true
 				for v := range room.PtitBacConns {
-					if err := v.WriteJSON("start game"); err != nil {
+					if err := v.WriteJSON("end round"); err != nil {
 						log.Println(err)
 						return
 					}
@@ -246,6 +246,7 @@ func DeafTestPage(w http.ResponseWriter, r *http.Request) {
 	temp.Execute(w, nil)
 }
 
+var letter string
 func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	cookie, err := r.Cookie("Id")
@@ -280,7 +281,7 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 		ConnSet{},
 		letter,
 		false,
-		map[string]games.Input{},
+		NewUsersInputs(),
 		sync.WaitGroup{},
 	}
 	http.Redirect(w, r, "/loadingPage?room="+room.Name, http.StatusFound)
@@ -310,11 +311,12 @@ func Result(w http.ResponseWriter, r *http.Request) {
 		Instrument: instrument,
 		Featuring:  featuring,
 	}
-	r.ParseForm()
+	_ = input
+	_ = username
 	room := arrayRoom[r.FormValue("room")]
 	DisplayResult(room, input, username)
 
-	// room.Wg.Wait()
+	room.Wg.Wait()
 
 	// room.Inputs[username] = input
 	// http.Redirect(w,r, "/")
@@ -323,7 +325,7 @@ func Result(w http.ResponseWriter, r *http.Request) {
 
 func DisplayResult(room *PtitBacData, input games.Input, username string) {
 	defer room.Wg.Done()
-	room.Inputs[username] = input
+	room.Ui.Add(username, input)
 }
 
 func Loading(w http.ResponseWriter, r *http.Request) {
@@ -351,9 +353,6 @@ func Loading(w http.ResponseWriter, r *http.Request) {
 
 	temp.Execute(w, nil)
 }
-
-var letter string
-var arrayInput []games.Input
 
 func PtitbacPage(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/ptitBac.html", "./template/websocket.html")

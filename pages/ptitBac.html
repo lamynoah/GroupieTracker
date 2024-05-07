@@ -28,7 +28,7 @@
         <label for="featuring">Featuring:</label>
         <input placeholder="{{.Letter}}..." type="text" name="featuring" id="featuring" autocomplete="off"
             required /><br>
-        <button onclick="done()">FINISH</button>
+        <input id="send" type="submit" value="FINISH" />
     </form>
     {{template "socket" "ptitBac"}}
     <script>
@@ -38,16 +38,21 @@
             socket.send(JSON.stringify({ Id: getRoomId(), Done: false }))
         };
         socket.onmessage = msg => {
-            console.log(msg.data)
+            console.log("recieved :", msg.data)
             if (JSON.parse(msg.data) === "end round") {
-                window.location.replace("http://localhost:8080/result" + window.location.search);
+                done(false)
             }
         }
-        let done = async () => {
-            socket.send(JSON.stringify({ Id: getRoomId(), Done: true }))
+        document.querySelector("form").addEventListener("submit", e => {
+            e.preventDefault()
+            done(true)
+        })
+        let done = (sender) => {
+            if (sender) {
+                socket.send(JSON.stringify({ Id: getRoomId(), Done: true }))
+                console.log("send :", { Id: getRoomId(), Done: true })
+            }
             const form = document.querySelector("form").submit()
-            // const formData = new FormData(form);
-            // window.location.replace("http://localhost:8080/result" + window.location.search);
         }
     </script>
 </body>
