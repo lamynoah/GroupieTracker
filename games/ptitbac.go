@@ -1,6 +1,7 @@
 package games
 
 import (
+	"database/sql"
 	"log"
 	"math/rand"
 	"time"
@@ -63,3 +64,29 @@ func IsElementUnique(arrayInput []Input) {
 }
 
 // artiste = noah && artiste = noah  == 1 points
+
+type ScoreBoard struct {
+	Username string
+	Score    int
+}
+
+func ScoreBoardData(room int, db *sql.DB) []ScoreBoard {
+	rows, err := db.Query("SELECT * FROM ROOM_USERS WHERE room_id=? ORDER BY score DES", room)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	dataScoreBoard := []ScoreBoard{}
+	for rows.Next() {
+		var username string
+		var score int
+		if err := rows.Scan(&username, &score); err != nil {
+			log.Fatal(err)
+		}
+		dataScoreBoard = append(dataScoreBoard, ScoreBoard{Username: username, Score: score})
+	}
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+	return dataScoreBoard
+}

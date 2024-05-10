@@ -247,6 +247,7 @@ func DeafTestPage(w http.ResponseWriter, r *http.Request) {
 }
 
 var letter string
+
 func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	cookie, err := r.Cookie("Id")
@@ -273,22 +274,36 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 	InsertRooms(room.Created_by, room.Max_players, room.Name, room.Id_game)
+	roomID, err := GetRoomID(room.Name)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	letters := []string{}
 	letter = games.GenerateUniqueLetters(&letters)
 
-	arrayRoom[room.Name] = &PtitBacData{
-		"?room=" + room.Name,
+	arrayRoom[strconv.Itoa(roomID)] = &PtitBacData{
+		"?room=" + strconv.Itoa(roomID),
 		ConnSet{},
 		letter,
 		false,
 		NewUsersInputs(),
 		sync.WaitGroup{},
 	}
-	http.Redirect(w, r, "/loadingPage?room="+room.Name, http.StatusFound)
+
+	// arrayRoom[room.Name] = &PtitBacData{
+	// 	"?room=" + room.Name,
+	// 	ConnSet{},
+	// 	letter,
+	// 	false,
+	// 	NewUsersInputs(),
+	// 	sync.WaitGroup{},
+	// }
+	http.Redirect(w, r, "/loadingPage?room="+strconv.Itoa(roomID), http.StatusFound)
 }
 
 func Result(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/result.html", "./template/websocket.html")
+	temp, _ := template.ParseFiles("./pages/result.html", "./template/websocket.html", "./template/scoreboard.html")
 	r.ParseForm()
 	cookie, err := r.Cookie("Id")
 	if err != nil {
@@ -311,6 +326,7 @@ func Result(w http.ResponseWriter, r *http.Request) {
 		Instrument: instrument,
 		Featuring:  featuring,
 	}
+	roomName := r.FormValue("room")
 	_ = input
 	_ = username
 	room := arrayRoom[r.FormValue("room")]
@@ -320,7 +336,21 @@ func Result(w http.ResponseWriter, r *http.Request) {
 
 	// room.Inputs[username] = input
 	// http.Redirect(w,r, "/")
-	temp.Execute(w, room)
+	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+	roomId, err := GetRoomIDFromName(roomName, db)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	temp.Execute(w, struct {
+		Room   *PtitBacData
+		ScoreB []games.ScoreBoard
+	}{room, games.ScoreBoardData(roomId, db)})
 }
 
 func DisplayResult(room *PtitBacData, input games.Input, username string) {
