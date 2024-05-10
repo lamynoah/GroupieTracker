@@ -8,50 +8,8 @@
 </head>
 
 <body>
-    <h1>Resultat</h1>
-    <h2>Artiste</h2>
-    <ul>
-        {{ range $Username, $input := .Ui.Inputs }}
-        <li>
-            {{ $Username }} : {{ $input.Artiste}}
-        </li>
-        {{end}}
-    </ul>
 
-    <h2>Album</h2>
-    <ul>
-        {{ range $Username, $input := .Ui.Inputs }}
-        <li>
-            {{ $Username }} : {{ $input.Album}}
-        </li>
-        {{end}}
-    </ul>
-    <h2>Groupe de musique</h2>
-    <ul>
-        {{ range $Username, $input := .Ui.Inputs }}
-        <li>
-            {{ $Username }} : {{ $input.Groupe}}
-        </li>
-        {{end}}
-    </ul>
-    <h2>Instrument de musique</h2>
-    <ul>
-        {{ range $Username, $input := .Ui.Inputs }}
-        <li>
-            {{ $Username }} : {{ $input.Instrument}}
-        </li>
-        {{end}}
-    </ul>
-    <h2>Featuring</h2>
-    <ul>
-        {{ range $Username, $input := .Ui.Inputs }}
-        <li>
-            {{ $Username }} : {{ $input.Featuring}}
-        </li>
-        {{end}}
-    </ul>
     <!-- {{ range $rank, score := .}} -->
-    {{template "scoreBoard"}}
+    <!-- {{template "scoreBoard" .ScoreBoardData }} -->
 </body>
-
 </html>

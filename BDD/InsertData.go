@@ -41,7 +41,7 @@ func InsertRoomsUser(id_room, id_user, score int) error {
 		return err
 	}
 	defer db.Close()
-	insertQuery := "INSERT INTO ROOM_USER(id_room, id_user, score) Values(?,?,?)"
+	insertQuery := "INSERT INTO ROOM_USERS(id_room, id_user, score) Values(?,?,?)"
 	_, err = db.Exec(insertQuery, id_room, id_user, score)
 	if err != nil {
 		return err

@@ -4,7 +4,8 @@ import (
 	"database/sql"
 	"log"
 	"math/rand"
-	"time"
+
+	"GT/Connect"
 )
 
 func GenererLetters() string {
@@ -31,11 +32,6 @@ func GenerateUniqueLetters(arrayLetter *[]string) string {
 			return letter
 		}
 	}
-}
-
-func StartTimer(duration int) {
-	time.Sleep(time.Duration(duration) * time.Second)
-	log.Println("Timer expired!")
 }
 
 type Input struct {
@@ -71,17 +67,21 @@ type ScoreBoard struct {
 }
 
 func ScoreBoardData(room int, db *sql.DB) []ScoreBoard {
-	rows, err := db.Query("SELECT * FROM ROOM_USERS WHERE room_id=? ORDER BY score DES", room)
+	rows, err := db.Query("SELECT id_user, score FROM ROOM_USERS WHERE id_room=? ORDER BY score DESC", room)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer rows.Close()
 	dataScoreBoard := []ScoreBoard{}
 	for rows.Next() {
-		var username string
+		var idUser string
 		var score int
-		if err := rows.Scan(&username, &score); err != nil {
+		if err := rows.Scan(&idUser, &score); err != nil {
 			log.Fatal(err)
+		}
+		username, err := connect.QueryUserName(idUser)
+		if err != nil {
+			log.Println(err)
 		}
 		dataScoreBoard = append(dataScoreBoard, ScoreBoard{Username: username, Score: score})
 	}

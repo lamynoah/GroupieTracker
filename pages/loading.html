@@ -1,27 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>loading</title>
 </head>
 
 <body>
-    <div> ATTENDS </div>
+    <div> En attente que les autres joueurs rejoignent </div>
     <!-- <a href="/ptitBac.html"><button> Start Game</button></a> -->
-    <button onclick="socket.send(JSON.stringify({ Id:getRoomId(), Start: true }))">Start all</button>
+    <button onclick="socket.send(JSON.stringify({ Id:getRoomId(), Start: true }))" disabled>Start all</button>
     {{template "socket" "loading"}}
     <script>
-        const getRoomId = () => new URLSearchParams(window.location.search).get("room")
         socket.onopen = () => {
-            console.log(JSON.stringify({ Id: getRoomId(), Start: false }));
+            console.log(JSON.stringify({ Id: getRoomId(), Start: false }))
             socket.send(JSON.stringify({ Id: getRoomId(), Start: false }))
-        };
+            document.querySelector("button").removeAttribute("disabled")
+        }
         socket.onmessage = msg => {
             console.log(msg.data)
             if (JSON.parse(msg.data) === "start game") {
-                window.location.replace("http://localhost:8080/ptitBac"+window.location.search);
+                window.location.replace("http://localhost:8080/ptitBac" + window.location.search);
             }
         }
     </script>

@@ -1,6 +1,7 @@
 package main
 
 import (
+	bdd "GT/BDD"
 	"GT/webfunc"
 	"fmt"
 	"net/http"
@@ -38,6 +39,8 @@ func main() {
 	http.HandleFunc("/ws/result", webfunc.WebSocket)
 	//conn, _ := net.Dial("tcp", "google.com:http")
 	//fmt.Println(conn.LocalAddr())
+
+	bdd.DeleteRoomsUser()
 
 	fmt.Println("Listening on port 8080")
 	fmt.Println("http://localhost:8080")

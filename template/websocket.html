@@ -31,6 +31,10 @@
     socket.onerror = error => {
         console.log("Socket Error: ", error);
     };
-
+    
+    const getRoomId = () => {
+        let id = new URLSearchParams(window.location.search).get("room")
+        return Number.parseInt(id)
+    }
 </script>
 {{end}}

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="UTF-8">
@@ -10,7 +10,7 @@
 
 <body>
     <h1> Lettre : {{.Letter}}</h1>
-    <form action="/result?room={{.RoomId}}" method="post">
+    <form>
         <label for="artiste">Artiste:</label>
         <input placeholder="{{.Letter}}..." type="text" name="artiste" id="artiste" autofocus autocomplete="off"
             required /><br>
@@ -30,17 +30,36 @@
             required /><br>
         <input id="send" type="submit" value="FINISH" />
     </form>
-    {{template "socket" "ptitBac"}}
+    <div id="result" style="display: none;">
+        <h1>Resultat</h1>
+    </div>
     <script>
-        const getRoomId = () => new URLSearchParams(window.location.search).get("room")
+        let categories = [
+            "Artiste",
+            "Album",
+            "Groupe de musique",
+            "Instrument de musique",
+            "Featuring"
+        ]
+        const resultDiv = document.getElementById("result")
+        categories.forEach(e => {
+            const h2 = document.createElement("h2")
+            h2.textContent = e
+            resultDiv.append(h2)
+        })
+
+    </script>
+    {{template "socket" "ptitBac" }}
+    <script>
         socket.onopen = () => {
-            console.log(JSON.stringify({ Id: getRoomId(), Done: false }));
+            console.log(JSON.stringify({ Id: getRoomId(), Done: false }))
             socket.send(JSON.stringify({ Id: getRoomId(), Done: false }))
-        };
+        }
         socket.onmessage = msg => {
             console.log("recieved :", msg.data)
-            if (JSON.parse(msg.data) === "end round") {
-                done(false)
+            switch (JSON.parse(msg.data)){
+                case "end round": done(false);break;
+                case "Timer expired!": 
             }
         }
         document.querySelector("form").addEventListener("submit", e => {

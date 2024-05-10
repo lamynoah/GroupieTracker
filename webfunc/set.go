@@ -4,7 +4,6 @@ import "github.com/gorilla/websocket"
 
 type ConnSet map[*websocket.Conn]bool
 
-
 // Add adds a new element to the Set. Returns a pointer to the Set.
 func (s *ConnSet) Add(t *websocket.Conn) *ConnSet {
 	_, ok := (*s)[t]
