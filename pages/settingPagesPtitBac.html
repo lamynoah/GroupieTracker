@@ -5,11 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Timer Configuration</title>
+    <link rel="stylesheet" type="text/css" href="/static/styles/settingsptitbac.css">
 </head>
 
 <body>
     <h2>Timer Configuration</h2>
-    <form action="/createRoom" method="get">
+    <form action="/createRoom" method="post">
         <label for="timerSeconds">Nombre de seconde pour le timer :</label>
         <input type="number" id="timerSeconds" name="timerSeconds" min="60" required>
         <br>
@@ -29,23 +30,53 @@
         <input id="addbtn" type="submit" value="Add">
         <input name="JSON" id="JSON" hidden>
         <p>Double click pour supprimer </p>
-        <div id="categories" style="display: flex; flex-wrap: wrap; width: 50%;"></div>
+        <div id="categories" style="display: flex; flex-wrap: wrap; width: 100%;"></div>
     </form>
-
     <script>
         let categories = ["Artiste", "Album", "Groupe de musique", "Instrument de musique", "Featuring"]
         let c = document.querySelector("#categories")
+
         let addCat = name => {
+            if (name.length < 1) return
             const elem = document.createElement("button")
             elem.textContent = name
             elem.style.margin = "2.5px"
-            elem.onclick = e => e.preventDefault()
+            elem.onclick = e => {
+                e.preventDefault()
+                // Create an input field
+                const inputField = document.createElement('input');
+                inputField.type = 'text';
+                const previousText = inputField.value = elem.textContent;
+
+                // Replace button text with input field
+                elem.textContent = '';
+                elem.appendChild(inputField);
+
+                // Focus on the input field
+                inputField.focus();
+
+                // Add event listener to input field for when editing is done
+                inputField.addEventListener('blur', function () {
+                    // Set the text of the button to the input field value
+                    elem.textContent = (inputField.value.length) ? inputField.value : previousText;
+                })
+            }
             elem.addEventListener("dblclick", () => {
                 c.removeChild(elem)
             })
             c.append(elem)
         }
-        new MutationObserver()
+        // MutationObserver to observe changes in the categories div
+        const observer = new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                if (mutation.type === 'childList') {
+                    // console.log('Children have been added or removed');
+                    categories = Array.from(c.childNodes).map(e => e.textContent)
+                }
+            });
+        });
+        observer.observe(c, { childList: true });
+
         const f = document.querySelector("form")
         f.addEventListener("submit", e => {
             e.preventDefault()

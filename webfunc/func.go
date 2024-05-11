@@ -17,14 +17,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// type ptitBac struct {
-// 	Artiste    string
-// 	Album      string
-// 	Groupe     string
-// 	Instrument string
-// 	Featuring  string
-// }
-
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -38,9 +30,12 @@ type PtitBacData struct {
 	PtitBacConns ConnSet
 	Letter       string
 	IsStarted    bool
-	Ui           UsersInputs
+	UsersInputs  map[string][]string
 	Timer        int
 	MaxRound     int
+	Categories   []string
+	CurrentTime  int
+	IsDone       bool
 }
 
 var arrayRoom = map[int]*PtitBacData{}
@@ -71,8 +66,10 @@ func reader(conn *websocket.Conn, game string) {
 		}
 	case "ptitBac":
 		jsonMsg := &struct {
-			Id   int
-			Done bool
+			Id     int      `json:"id_room"`
+			UserId int      `json:"id_user"`
+			Done   bool     `json:"Done"`
+			Data   []string `json:"data"`
 		}{}
 		for {
 			err := conn.ReadJSON(jsonMsg)
@@ -80,8 +77,10 @@ func reader(conn *websocket.Conn, game string) {
 				log.Println(err)
 				return
 			}
+			fmt.Println(jsonMsg)
 			room := arrayRoom[jsonMsg.Id]
 			room.PtitBacConns.Add(conn)
+
 			// fmt.Println("room connections :", room.PtitBacConns)
 			defaultHandler := conn.CloseHandler()
 			conn.SetCloseHandler(func(code int, text string) error {
@@ -89,8 +88,20 @@ func reader(conn *websocket.Conn, game string) {
 				return defaultHandler(code, text)
 			})
 			if jsonMsg.Done {
+				fmt.Println(jsonMsg)
 				room.IsStarted = true
+				room.IsDone = true
 				room.SendToRoom("end round")
+				room.SendToRoom("get data")
+			}
+			if len(jsonMsg.Data) > 0 {
+				username, err := QueryUserName(jsonMsg.UserId)
+				if err != nil {
+					log.Println("useridQuery : ", err)
+				}
+				room.UsersInputs[username] = jsonMsg.Data
+				room.SendToRoom(map[string][]string{username: jsonMsg.Data})
+				fmt.Println(room.UsersInputs)
 			}
 		}
 	case "loading":
@@ -114,13 +125,8 @@ func reader(conn *websocket.Conn, game string) {
 			})
 			if jsonMsg.Start {
 				room.IsStarted = true
-				go StartTimer(room)
-				for v := range room.PtitBacConns {
-					if err := v.WriteJSON("start game"); err != nil {
-						log.Println(err)
-						return
-					}
-				}
+				go room.StartTimer()
+				room.SendToRoom("start game")
 			}
 		}
 	default:
@@ -128,7 +134,7 @@ func reader(conn *websocket.Conn, game string) {
 	}
 }
 
-func (room *PtitBacData) SendToRoom(msg string) {
+func (room *PtitBacData) SendToRoom(msg any) {
 	for v := range room.PtitBacConns {
 		if err := v.WriteJSON(msg); err != nil {
 			log.Println(err)
@@ -137,10 +143,24 @@ func (room *PtitBacData) SendToRoom(msg string) {
 	}
 }
 
-func StartTimer(room *PtitBacData) {
+// MARK: Timer
+func (room *PtitBacData) StartTimer() {
+	go room.timerDecrease()
 	time.Sleep(time.Duration(room.Timer) * time.Second)
-	room.SendToRoom("Timer expired!")
-	log.Println(room.RoomLink, ": Timer expired!")
+	if !room.IsDone {
+		room.SendToRoom("Timer expired!")
+		log.Println(room.RoomLink, ": Timer expired!")
+		room.IsDone = true
+		room.SendToRoom("end round")
+		room.SendToRoom("get data")
+	}
+}
+
+func (room *PtitBacData) timerDecrease() {
+	for room.CurrentTime != 0 {
+		time.Sleep(time.Second)
+		room.CurrentTime--
+	}
 }
 
 func Select(w http.ResponseWriter, r *http.Request) {
@@ -260,6 +280,7 @@ func DeafTestPage(w http.ResponseWriter, r *http.Request) {
 
 var letter string
 
+// MARK: CreateRoom
 func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	cookie, err := r.Cookie("Id")
@@ -306,16 +327,6 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	letters := []string{}
 	letter = games.GenerateUniqueLetters(&letters)
 
-	arrayRoom[roomID] = &PtitBacData{
-		"?room=" + fmt.Sprint(roomID),
-		ConnSet{},
-		letter,
-		false,
-		NewUsersInputs(),
-		timer,
-		maxRound,
-	}
-
 	fmt.Println("catJSON :", r.FormValue("JSON"))
 	var categories []string
 	if err = json.Unmarshal([]byte(r.FormValue("JSON")), &categories); err != nil {
@@ -323,77 +334,20 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println(categories)
 
-	// arrayRoom[room.Name] = &PtitBacData{
-	// 	"?room=" + room.Name,
-	// 	ConnSet{},
-	// 	letter,
-	// 	false,
-	// 	NewUsersInputs(),
-	// 	sync.WaitGroup{},
-	// }
+	//MARK: Init Room
+	arrayRoom[roomID] = &PtitBacData{
+		RoomLink:     "?room=" + fmt.Sprint(roomID),
+		PtitBacConns: ConnSet{},
+		Letter:       letter,
+		IsStarted:    false,
+		UsersInputs:  make(map[string][]string),
+		Timer:        timer,
+		MaxRound:     maxRound,
+		Categories:   categories,
+		CurrentTime:  timer,
+	}
+
 	http.Redirect(w, r, "/loadingPage?room="+strconv.Itoa(roomID), http.StatusFound)
-}
-
-func Result(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/result.html", "./template/websocket.html", "./template/scoreboard.html")
-	r.ParseForm()
-	cookie, err := r.Cookie("Id")
-	if err != nil {
-		log.Println(err)
-	}
-	username, err := QueryUserName(cookie.Value)
-	if err != nil {
-		log.Println(err)
-	}
-	// round := r.FormValue("roundsNumber")
-	artiste := r.FormValue("artiste")
-	album := r.FormValue("album")
-	groupe := r.FormValue("groupe")
-	instrument := r.FormValue("instrument")
-	featuring := r.FormValue("featuring")
-	input := games.Input{
-		Artiste:    artiste,
-		Album:      album,
-		Groupe:     groupe,
-		Instrument: instrument,
-		Featuring:  featuring,
-	}
-	roomId, err := strconv.Atoi(r.FormValue("room"))
-	if err != nil {
-		log.Println(err)
-	}
-	room := arrayRoom[roomId]
-	room.Ui.Add(username, input)
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
-	userId, err := strconv.Atoi(cookie.Value)
-	if err != nil {
-		fmt.Println(err)
-	}
-	err = InsertRoomsUser(roomId, userId, 0)
-	if err != nil {
-		fmt.Println("here :", err)
-	}
-
-	scData := games.ScoreBoardData(roomId, db)
-	fmt.Println(scData, room)
-	fmt.Println("Done-5161846-Done")
-	fmt.Println("Done-5161846-Done")
-	fmt.Println("Done-5161846-Done")
-	fmt.Println("Done-5161846-Done")
-	fmt.Println("Done-5161846-Done")
-	fmt.Println("Done-5161846-Done")
-
-	// temp.Execute(w, struct {
-	// 	Room           *PtitBacData
-	// 	ScoreBoardData []games.ScoreBoard
-	// }{room, scData})
-	// temp.Execute(w, nil)
-	_ = temp
 }
 
 func Loading(w http.ResponseWriter, r *http.Request) {
@@ -425,22 +379,7 @@ func Loading(w http.ResponseWriter, r *http.Request) {
 	temp.Execute(w, nil)
 }
 
-// <script>
-// 	window.onload = function() {
-// 		// Récupération de la durée du timer depuis la session
-// 		const timerDuration = "{{.TimerDuration}}";
-
-// 		// Fonction pour démarrer le timer
-// 		function startTimer(duration, display) {
-// 			// Implémentez votre logique de timer ici...
-// 		}
-
-// 		// Démarrer le timer avec la durée récupérée
-// 		let display = document.querySelector('#timer');
-// 		startTimer(timerDuration, display);
-// 	};
-// </script>
-
+// MARK: PtitbacPage
 func PtitbacPage(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/ptitBac.html", "./template/websocket.html")
 	r.ParseForm()
@@ -448,11 +387,15 @@ func PtitbacPage(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
+	room := arrayRoom[roomId]
 	temp.Execute(w, struct {
-		Letter    string
-		IsPlaying bool
-		RoomId    int
-	}{arrayRoom[roomId].Letter, true, roomId})
+		Letter     string
+		IsPlaying  bool
+		RoomId     int
+		Categories []string
+		Time       int
+		IsDone     bool
+	}{room.Letter, true, roomId, room.Categories, room.CurrentTime, room.IsDone})
 }
 
 func SettingBacPage(w http.ResponseWriter, r *http.Request) {

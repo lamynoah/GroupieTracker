@@ -29,7 +29,7 @@ func main() {
 	http.HandleFunc("/lobby", webfunc.Lobby)
 	http.HandleFunc("/loadingPage", webfunc.Loading)
 	http.HandleFunc("/createRoom", webfunc.CreateRoom)
-	http.HandleFunc("/result", webfunc.Result)
+	// http.HandleFunc("/result", webfunc.Result)
 	// websockets routes
 	http.HandleFunc("/ws", webfunc.WebSocket)
 	http.HandleFunc("/ws/blindTest", webfunc.WebSocket)
@@ -41,6 +41,10 @@ func main() {
 	//fmt.Println(conn.LocalAddr())
 
 	bdd.DeleteRoomsUser()
+
+	// Create css directory
+	fs := http.FileServer(http.Dir("static/"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	fmt.Println("Listening on port 8080")
 	fmt.Println("http://localhost:8080")

@@ -74,7 +74,7 @@ func ScoreBoardData(room int, db *sql.DB) []ScoreBoard {
 	defer rows.Close()
 	dataScoreBoard := []ScoreBoard{}
 	for rows.Next() {
-		var idUser string
+		var idUser int
 		var score int
 		if err := rows.Scan(&idUser, &score); err != nil {
 			log.Fatal(err)

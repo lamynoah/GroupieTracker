@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 	"strconv"
-	
+
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -110,7 +110,7 @@ func QueryUserId(usernameOrEmail string) (int, error) {
 	return id, nil
 }
 
-func QueryUserName(userId string) (string, error) {
+func QueryUserName(userId int) (string, error) {
 	db, err := sql.Open("sqlite3", "./BDD/table.db")
 	if err != nil {
 		return "", err
