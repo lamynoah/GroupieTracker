@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <h2>Timer Configuration</h2>
+    <h2>Création d'une partie</h2>
     <form action="/createRoom" method="post">
         <label for="timerSeconds">Nombre de seconde pour le timer :</label>
         <input type="number" id="timerSeconds" name="timerSeconds" min="60" required>
@@ -29,7 +29,7 @@
         <input id="new" type="text" maxlength="20">
         <input id="addbtn" type="submit" value="Add">
         <input name="JSON" id="JSON" hidden>
-        <p>Double click pour supprimer </p>
+        <p>Clique droit pour supprimer<br>Clique gauche pour modifier</p>
         <div id="categories" style="display: flex; flex-wrap: wrap; width: 100%;"></div>
     </form>
     <script>
@@ -48,6 +48,7 @@
                 inputField.type = 'text';
                 const previousText = inputField.value = elem.textContent;
 
+                elem.disabled = true
                 // Replace button text with input field
                 elem.textContent = '';
                 elem.appendChild(inputField);
@@ -58,10 +59,13 @@
                 // Add event listener to input field for when editing is done
                 inputField.addEventListener('blur', function () {
                     // Set the text of the button to the input field value
-                    elem.textContent = (inputField.value.length) ? inputField.value : previousText;
+                    console.log("> 0 : ", inputField.value.length > 0)
+                    console.log("result : ", (inputField.value.length > 0) ? inputField.value : previousText)
+                    elem.textContent = (inputField.value.length > 0) ? inputField.value : previousText;
+                    elem.disabled = false
                 })
             }
-            elem.addEventListener("dblclick", () => {
+            elem.addEventListener("contextmenu", () => {
                 c.removeChild(elem)
             })
             c.append(elem)

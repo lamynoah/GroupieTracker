@@ -87,7 +87,7 @@ func reader(conn *websocket.Conn, game string) {
 				room.PtitBacConns.Delete(conn)
 				return defaultHandler(code, text)
 			})
-			if jsonMsg.Done {
+			if jsonMsg.Done && !room.IsDone {
 				fmt.Println(jsonMsg)
 				room.IsStarted = true
 				room.IsDone = true
