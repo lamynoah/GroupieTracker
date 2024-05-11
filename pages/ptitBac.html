@@ -11,10 +11,10 @@
 {{$l := .Letter}}
 
 <body>
-    is Done = {{.IsDone}}
     <div id="in-game">
-        <h1> Lettre : {{.Letter}}</h1>
+        <h1> Lettre : <span id="letter">{{.Letter}}</span></h1>
         <div id="timer">{{.Time}}s</div>
+        <div> Nombre de round : <span id="round">{{ .CurrentRound}}</span> / {{.MaxRound}}</div>
         <form>
             {{range .Categories}}
             <label for="{{.}}">{{.}}:</label>
@@ -23,104 +23,105 @@
             <input id="send" type="submit" value="FINISH" />
         </form>
     </div>
-    <div id="result" style="display: block;">
+    <div id="result" style="display: none;">
         <h1>Resultat</h1>
         {{range .Categories}}
         <h3>{{.}}</h3>
         <ul class="user-result"></ul>
         {{end}}
-        {{template "socket" "ptitBac"}}
-        <script>
-            let time = Number.parseInt("{{.Time}}")
-            const timerDiv = document.querySelector("#timer")
-            if (time < 1) { // || JSON.parse("{{.IsDone}}")) {
-                setFinished()
-            }
-            const inter = setInterval(()=>{
-                time--
-                timerDiv.textContent = `${time}s`
-                if (time === 5) timerDiv.style.color = red
-                else if (time < 1) clearInterval(inter)
-            },1000)
+        {{if .IsCreator}}
+        <button onclick="socket.send(JSON.stringify({ Id:getRoomId(), NextRound: true, id_user : Number.parseInt(getCookie('Id')) }))" >Round Suivant</button>
+        {{end}}
+    </div>
+    {{template "socket" "ptitBac"}}
+    <script>
+        let time = Number.parseInt("{{.Time}}")
+        let round = Number.parseInt("{{.CurrentRound}}")
 
-            function setFinished() {
-                document.querySelector("#in-game").style.display = "none"
-                document.querySelector("#result").removeAttribute("style")
-            }
+        const timerDiv = document.querySelector("#timer")
+        if (time < 1) { // || JSON.parse("{{.IsDone}}")) {
+            setFinished()
+        }
+        const inter = setInterval(() => {
+            time--
+            timerDiv.textContent = `${time}s`
+            if (time === 10) timerDiv.style.color = "red"
+            else if (time < 1) clearInterval(inter)
+        }, 1000)
 
-            function getCookie(cname) {
-                let name = cname + "=";
-                let decodedCookie = decodeURIComponent(document.cookie);
-                let ca = decodedCookie.split(';');
-                for (let i = 0; i < ca.length; i++) {
-                    let c = ca[i];
-                    while (c.charAt(0) == ' ') {
-                        c = c.substring(1);
-                    }
-                    if (c.indexOf(name) == 0) {
-                        return c.substring(name.length, c.length);
-                    }
-                }
-                return "";
-            }
-            
-            socket.onopen = () => {
-                console.log(JSON.stringify({ id_room: getRoomId(), Done: false }))
-                socket.send(JSON.stringify({ id_room: getRoomId(), Done: false }))
-            }
-            socket.onmessage = msg => {
-                console.log("recieved :", msg.data)
-                let obj = JSON.parse(msg.data)
-                if (typeof obj === "object") {
-                    const divs = document.getElementsByClassName("user-result")
-                    const map = new Map(Object.entries(obj))
-                    map.forEach((value, key) => {
-                        console.log(`${key}: ${value}`)
-                        console.log("type of value =", typeof value)
-                        value.forEach((v, i) => {
-                            const li = document.createElement("li")
-                            li.textContent = `${key}: ${v}`
-                            const btnVerif = document.createElement("button")
-                            btnVerif.classList.toggle("true")
-                            btnVerif.onclick = function () {
-                                const category = key;
-                                const value = v;
-                                if (btnVerif.classList.contains("true")) {
-                                    btnVerif.classList.toggle("true")
-                                    btnVerif.classList.toggle("false")
-                                } else {
-                                    btnVerif.classList.toggle("false")
-                                    btnVerif.classList.toggle("true")
-                                }
+        function setFinished() {
+            document.querySelector("#in-game").style.display = "none"
+            document.querySelector("#result").removeAttribute("style")
+        }
+
+        socket.onopen = () => {
+            console.log(JSON.stringify({ id_room: getRoomId(), Done: false }))
+            socket.send(JSON.stringify({ id_room: getRoomId(), Done: false }))
+        }
+        socket.onmessage = msg => {
+            console.log("recieved :", msg.data)
+            let obj = JSON.parse(msg.data)
+            // obj = {letter: "L"}
+            // "{letter : " + room.Letter + " }"
+            // "Timer expired!"
+            // "end round"
+            // map[username]inputs
+            if (obj.letter) {
+                const newLetter = document.getElementById("letter")
+                newLetter.textContent = obj.letter
+                Array.from(document.querySelector("input[type='text']")).forEach(e => {
+                    e.placeholder = obj.letter + "..."
+                })
+                // lettere : 1 dans mon go j 'ai ma lettre 2 , et je veux remplacer ma lettre 1 par la 2 '
+            } else if (typeof obj === "object") {
+                const divs = document.getElementsByClassName("user-result")
+                const map = new Map(Object.entries(obj))
+                map.forEach((value, key) => {
+                    console.log(`${key}: ${value}`)
+                    console.log("type of value =", typeof value)
+                    value.forEach((v, i) => {
+                        const li = document.createElement("li")
+                        li.textContent = `${key}: ${v}`
+                        const btnVerif = document.createElement("button")
+                        btnVerif.classList.toggle("true")
+                        btnVerif.onclick = function () {
+                            const category = key;
+                            const value = v;
+                            if (btnVerif.classList.contains("true")) {
+                                btnVerif.classList.toggle("true")
+                                btnVerif.classList.toggle("false")
+                            } else {
+                                btnVerif.classList.toggle("false")
+                                btnVerif.classList.toggle("true")
                             }
+                        }
 
-                            li.appendChild(btnVerif)
-                            divs[i].append(li)
-                        })
-
+                        li.appendChild(btnVerif)
+                        divs[i].append(li)
                     })
-                }
-                switch (obj) {
-                    case "get data":
-                        setFinished()
-                        const arr = Array.from(document.querySelectorAll("input[type='text']")).map(e => e.value)
-                        console.log(arr)
-                        socket.send(JSON.stringify({ id_room: getRoomId(), Done: false, data: arr, id_user: Number.parseInt(getCookie("Id")) }))
-                        break;
-                    case "Timer expired!":
-                    case "end round": done(); break;
-                }
+                })
             }
-            document.querySelector("form").addEventListener("submit", e => {
-                e.preventDefault()
-                done()
-            })
-            let done = () => {
-                let data = JSON.stringify({ id_room: getRoomId(), Done: true })
-                socket.send(data)
-                console.log("send :", data)
+            switch (obj) {
+                case "Timer expired!":
+                case "end round":
+                    done();
+                    setFinished()
+                    const arr = Array.from(document.querySelectorAll("input[type='text']")).map(e => e.value)
+                    console.log(arr)
+                    socket.send(JSON.stringify({ id_room: getRoomId(), Done: false, data: arr, id_user: Number.parseInt(getCookie("Id")) }))
+                    break;
             }
-        </script>
+        }
+        document.querySelector("form").addEventListener("submit", e => {
+            e.preventDefault()
+            done()
+        })
+        let done = () => {
+            let data = JSON.stringify({ id_room: getRoomId(), Done: true })
+            socket.send(data)
+            console.log("send :", data)
+        }
+    </script>
 </body>
 
 </html>

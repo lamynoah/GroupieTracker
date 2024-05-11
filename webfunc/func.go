@@ -29,10 +29,12 @@ type PtitBacData struct {
 	RoomLink     string
 	PtitBacConns ConnSet
 	Letter       string
+	ArrayLetter  []string
 	IsStarted    bool
 	UsersInputs  map[string][]string
 	Timer        int
 	MaxRound     int
+	CurrentRound int
 	Categories   []string
 	CurrentTime  int
 	IsDone       bool
@@ -70,6 +72,7 @@ func reader(conn *websocket.Conn, game string) {
 			UserId int      `json:"id_user"`
 			Done   bool     `json:"Done"`
 			Data   []string `json:"data"`
+			NextRound bool  `json: "NextRound"`
 		}{}
 		for {
 			err := conn.ReadJSON(jsonMsg)
@@ -92,7 +95,6 @@ func reader(conn *websocket.Conn, game string) {
 				room.IsStarted = true
 				room.IsDone = true
 				room.SendToRoom("end round")
-				room.SendToRoom("get data")
 			}
 			if len(jsonMsg.Data) > 0 {
 				username, err := QueryUserName(jsonMsg.UserId)
@@ -103,11 +105,15 @@ func reader(conn *websocket.Conn, game string) {
 				room.SendToRoom(map[string][]string{username: jsonMsg.Data})
 				fmt.Println(room.UsersInputs)
 			}
+			if(jsonMsg.NextRound) {
+				room.NextRound()
+			}
 		}
 	case "loading":
 		jsonMsg := &struct {
-			Id    int
-			Start bool
+			Id     int
+			UserId int `json:"id_user"`
+			Start  bool
 		}{}
 		fmt.Println("all connections :", ptitBacConns)
 		for {
@@ -123,10 +129,18 @@ func reader(conn *websocket.Conn, game string) {
 				room.PtitBacConns.Delete(conn)
 				return defaultHandler(code, text)
 			})
-			if jsonMsg.Start {
+
+			r, err := QueryRoom(jsonMsg.Id)
+			if err != nil {
+				log.Println(err)
+			}
+
+			if jsonMsg.Start && r.Created_by == jsonMsg.UserId {
 				room.IsStarted = true
 				go room.StartTimer()
 				room.SendToRoom("start game")
+			} else {
+				fmt.Println("non :", jsonMsg.Start, r.Created_by == jsonMsg.UserId)
 			}
 		}
 	default:
@@ -143,6 +157,17 @@ func (room *PtitBacData) SendToRoom(msg any) {
 	}
 }
 
+// MARK: nextRound
+func (room *PtitBacData) NextRound() {
+	if room.CurrentRound < room.MaxRound {
+		room.CurrentRound++
+		room.Letter = games.GenerateUniqueLetters(&room.ArrayLetter)
+		room.SendToRoom("{letter : " + room.Letter + " }")
+	} else {
+		room.SendToRoom("end game")
+	}
+}
+
 // MARK: Timer
 func (room *PtitBacData) StartTimer() {
 	go room.timerDecrease()
@@ -152,7 +177,6 @@ func (room *PtitBacData) StartTimer() {
 		log.Println(room.RoomLink, ": Timer expired!")
 		room.IsDone = true
 		room.SendToRoom("end round")
-		room.SendToRoom("get data")
 	}
 }
 
@@ -278,19 +302,10 @@ func DeafTestPage(w http.ResponseWriter, r *http.Request) {
 	temp.Execute(w, nil)
 }
 
-var letter string
-
 // MARK: CreateRoom
 func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	cookie, err := r.Cookie("Id")
-	if err != nil {
-		log.Fatal(err)
-	}
-	id, err := strconv.Atoi(cookie.Value)
-	if err != nil {
-		log.Fatal(err)
-	}
+	UserId := getUserIdFromPage(r)
 	max_player, err := strconv.Atoi(r.FormValue("playersNumber"))
 	if err != nil {
 		log.Fatal(err)
@@ -304,7 +319,7 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	db, err := sql.Open("sqlite3", "./BDD/table.db")
 	room := games.ROOM{
-		Created_by:  id,
+		Created_by:  UserId,
 		Max_players: max_player,
 		Name:        name,
 		Id_game:     3,
@@ -325,7 +340,7 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	letters := []string{}
-	letter = games.GenerateUniqueLetters(&letters)
+	letter := games.GenerateUniqueLetters(&letters)
 
 	fmt.Println("catJSON :", r.FormValue("JSON"))
 	var categories []string
@@ -339,10 +354,12 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 		RoomLink:     "?room=" + fmt.Sprint(roomID),
 		PtitBacConns: ConnSet{},
 		Letter:       letter,
+		ArrayLetter:  letters,
 		IsStarted:    false,
 		UsersInputs:  make(map[string][]string),
 		Timer:        timer,
 		MaxRound:     maxRound,
+		CurrentRound: 1,
 		Categories:   categories,
 		CurrentTime:  timer,
 	}
@@ -354,9 +371,7 @@ func Loading(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/loading.html", "./template/websocket.html")
 	r.ParseForm()
 	roomId, err := strconv.Atoi(r.FormValue("room"))
-	if err != nil {
-		log.Println(err)
-	}
+	userId := getUserIdFromPage(r)
 	db, err := sql.Open("sqlite3", "./BDD/table.db")
 	if err != nil {
 		log.Fatal(err)
@@ -376,7 +391,24 @@ func Loading(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	temp.Execute(w, nil)
+	room, err := QueryRoom(roomId)
+	if err != nil {
+		log.Println(err)
+	}
+
+	temp.Execute(w, room.Created_by == userId)
+}
+
+func getUserIdFromPage(r *http.Request) int {
+	cookie, err := r.Cookie("Id")
+	if err != nil {
+		log.Println(err)
+	}
+	userId, err := strconv.Atoi(cookie.Value)
+	if err != nil {
+		log.Println(err)
+	}
+	return userId
 }
 
 // MARK: PtitbacPage
@@ -387,15 +419,33 @@ func PtitbacPage(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
+
+	roomRow, err := QueryRoom(roomId)
+	if err != nil {
+		log.Println(err)
+	}
+	userId := getUserIdFromPage(r)
+
 	room := arrayRoom[roomId]
 	temp.Execute(w, struct {
-		Letter     string
-		IsPlaying  bool
-		RoomId     int
-		Categories []string
-		Time       int
-		IsDone     bool
-	}{room.Letter, true, roomId, room.Categories, room.CurrentTime, room.IsDone})
+		Letter       string
+		IsCreator    bool
+		RoomId       int
+		Categories   []string
+		Time         int
+		CurrentRound int
+		MaxRound     int
+		IsDone       bool
+	}{
+		Letter:       room.Letter,
+		IsCreator:    roomRow.Created_by == userId,
+		RoomId:       roomId,
+		Categories:   room.Categories,
+		Time:         room.CurrentTime,
+		CurrentRound: room.CurrentRound,
+		MaxRound:     room.MaxRound,
+		IsDone:       room.IsDone,
+	})
 }
 
 func SettingBacPage(w http.ResponseWriter, r *http.Request) {
