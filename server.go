@@ -1,7 +1,7 @@
 package main
 
 import (
-	bdd "GT/BDD"
+	"GT/bdd"
 	"GT/webfunc"
 	"fmt"
 	"net/http"

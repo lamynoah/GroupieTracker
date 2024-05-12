@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Timer Configuration</title>
+    <title>Partie Configuration</title>
     <link rel="stylesheet" type="text/css" href="/static/styles/settingsptitbac.css">
 </head>
 
@@ -12,7 +12,7 @@
     <h2>Création d'une partie</h2>
     <form action="/createRoom" method="post">
         <label for="timerSeconds">Nombre de seconde pour le timer :</label>
-        <input type="number" id="timerSeconds" name="timerSeconds" min="60" required>
+        <input type="number" id="timerSeconds" name="timerSeconds" min="10" required>
         <br>
         <label for="roundsNumber">Nombre de round (26 rounds maximum):</label>
         <input type="number" id="roundsNumber" name="roundsNumber" min="1" max="25" required>

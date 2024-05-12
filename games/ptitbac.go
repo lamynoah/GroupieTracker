@@ -5,7 +5,7 @@ import (
 	"log"
 	"math/rand"
 
-	"GT/Connect"
+	"GT/connect"
 )
 
 func GenererLetters() string {
