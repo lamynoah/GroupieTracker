@@ -248,9 +248,7 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 }
 
 func BlindtestPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/blindTest.html")
-	time, _ := strconv.Atoi(r.FormValue("timerSeconds"))
-	go games.StartTimer(time)
+	temp, _ := template.ParseFiles("./pages/blindtest.html")
 	temp.Execute(w, nil)
 }
 

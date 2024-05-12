@@ -8,6 +8,16 @@ import (
 	"time"
 )
 
+var playlistData struct {
+	Tracks struct {
+		Items []struct {
+			Track struct {
+				ID string `json:"id"`
+			} `json:"track"`
+		} `json:"items"`
+	} `json:"tracks"`
+}
+
 //lint:ignore U1000 reason
 func RequestPlaylist() string {
 	accessToken := GetAccessToken()
