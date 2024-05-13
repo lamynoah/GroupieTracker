@@ -1,12 +1,14 @@
 package bdd
 
+import (
+	"database/sql"
 
-import ("database/sql"
-_ "github.com/mattn/go-sqlite3")
+	_ "github.com/mattn/go-sqlite3"
+)
 
 func CreateUserTable() error {
 
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", "./bdd/table.db")
 	if err != nil {
 		return err
 	}
@@ -27,7 +29,7 @@ func CreateUserTable() error {
 }
 
 func CreateRoomsTable() error {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", "./bdd/table.db")
 	if err != nil {
 		return err
 	}
@@ -35,7 +37,7 @@ func CreateRoomsTable() error {
 
 	createTableQuery := `
         CREATE TABLE IF NOT EXISTS ROOMS (
-            id INTEGER PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             created_by INTEGER NOT NULL,
             max_player INTEGER NOT NULL,
             name TEXT NOT NULL,
@@ -54,7 +56,7 @@ func CreateRoomsTable() error {
 }
 
 func CreateRoomUsersTable() error {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", "./bdd/table.db")
 	if err != nil {
 		return err
 	}
@@ -80,7 +82,7 @@ func CreateRoomUsersTable() error {
 }
 
 func CreateGamesTable() error {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", "./bdd/table.db")
 	if err != nil {
 		return err
 	}
@@ -88,7 +90,7 @@ func CreateGamesTable() error {
 
 	createTableQuery := `
         CREATE TABLE IF NOT EXISTS GAMES (
-            id INTEGER PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL
         );
     `
