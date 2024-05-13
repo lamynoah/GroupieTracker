@@ -1,0 +1,378 @@
+[
+    {
+            "Author": "Aretha Franklin",
+            "Title": "Respect"
+    },
+    {
+            "Author": "The Bee Gees",
+            "Title": "Stayin' Alive"
+    },
+    {
+            "Author": "The Clash",
+            "Title": "London Calling"
+    },
+    {
+            "Author": "Elton John",
+            "Title": "Rocket Man"
+    },
+    {
+            "Author": "Fleetwood Mac",
+            "Title": "Go Your Own Way"
+    },
+    {
+            "Author": "Aerosmith",
+            "Title": "Dream On"
+    },
+    {
+            "Author": "The Who",
+            "Title": "My Generation"
+    },
+    {
+            "Author": "Ray Charles",
+            "Title": "What'd I Say"
+    },
+    {
+            "Author": "The Ramones",
+            "Title": "Blitzkrieg Bop"
+    },
+    {
+            "Author": "Madonna",
+            "Title": "Like a Prayer"
+    },
+    {
+            "Author": "Radiohead",
+            "Title": "Creep"
+    },
+    {
+            "Author": "Johnny Cash",
+            "Title": "Ring of Fire"
+    },
+    {
+            "Author": "Metallica",
+            "Title": "Enter Sandman"
+    },
+    {
+            "Author": "AC/DC",
+            "Title": "Back in Black"
+    },
+    {
+            "Author": "Guns N' Roses",
+            "Title": "Sweet Child o' Mine"
+    },
+    {
+            "Author": "The Beach Boys",
+            "Title": "Good Vibrations"
+    },
+    {
+            "Author": "The Doors",
+            "Title": "Light My Fire"
+    },
+    {
+            "Author": "BeyoncÃ©",
+            "Title": "Crazy in Love"
+    },
+    {
+            "Author": "Frank Sinatra",
+            "Title": "My Way"
+    },
+    {
+            "Author": "Eminem",
+            "Title": "Lose Yourself"
+    },
+    {
+            "Author": "Coldplay",
+            "Title": "Fix You"
+    },
+    {
+            "Author": "Whitney Houston",
+            "Title": "I Will Always Love You"
+    },
+    {
+            "Author": "Oasis",
+            "Title": "Wonderwall"
+    },
+    {
+            "Author": "Green Day",
+            "Title": "American Idiot"
+    },
+    {
+            "Author": "The Police",
+            "Title": "Every Breath You Take"
+    },
+    {
+            "Author": "Red Hot Chili Peppers",
+            "Title": "Under the Bridge"
+    },
+    {
+            "Author": "Kanye West",
+            "Title": "Gold Digger"
+    },
+    {
+            "Author": "Bill Withers",
+            "Title": "Ain't No Sunshine"
+    },
+    {
+            "Author": "Jay-Z",
+            "Title": "Empire State of Mind"
+    },
+    {
+            "Author": "Jimi Hendrix",
+            "Title": "Purple Haze"
+    },
+    {
+            "Author": "OutKast",
+            "Title": "Hey Ya!"
+    },
+    {
+            "Author": "The White Stripes",
+            "Title": "Seven Nation Army"
+    },
+    {
+            "Author": "Black Sabbath",
+            "Title": "Paranoid"
+    },
+    {
+            "Author": "Santana",
+            "Title": "Smooth"
+    },
+    {
+            "Author": "The Temptations",
+            "Title": "My Girl"
+    },
+    {
+            "Author": "Simon \u0026 Garfunkel",
+            "Title": "Bridge Over Troubled Water"
+    },
+    {
+            "Author": "The Supremes",
+            "Title": "Stop! In the Name of Love"
+    },
+    {
+            "Author": "Michael Jackson",
+            "Title": "Thriller"
+    },
+    {
+            "Author": "Queen",
+            "Title": "Bohemian Rhapsody"
+    },
+    {
+            "Author": "The Beatles",
+            "Title": "Hey Jude"
+    },
+    {
+            "Author": "Bob Dylan",
+            "Title": "Like a Rolling Stone"
+    },
+    {
+            "Author": "Elvis Presley",
+            "Title": "Jailhouse Rock"
+    },
+    {
+            "Author": "Stevie Wonder",
+            "Title": "Superstition"
+    },
+    {
+            "Author": "Led Zeppelin",
+            "Title": "Stairway to Heaven"
+    },
+    {
+            "Author": "David Bowie",
+            "Title": "Space Oddity"
+    },
+    {
+            "Author": "Nirvana",
+            "Title": "Smells Like Teen Spirit"
+    },
+    {
+            "Author": "Prince",
+            "Title": "Purple Rain"
+    },
+    {
+            "Author": "The Eagles",
+            "Title": "Hotel California"
+    },
+    {
+            "Author": "Pink Floyd",
+            "Title": "Comfortably Numb"
+    },
+    {
+            "Author": "Bruce Springsteen",
+            "Title": "Born to Run"
+    },
+    {
+            "Author": "Bob Marley",
+            "Title": "No Woman, No Cry"
+    },
+    {
+            "Author": "Cream",
+            "Title": "Sunshine of Your Love"
+    },
+    {
+            "Author": "The Jackson 5",
+            "Title": "I Want You Back"
+    },
+    {
+            "Author": "Tina Turner",
+            "Title": "What's Love Got to Do with It"
+    },
+    {
+            "Author": "Deep Purple",
+            "Title": "Smoke on the Water"
+    },
+    {
+            "Author": "Adele",
+            "Title": "Rolling in the Deep"
+    },
+    {
+            "Author": "Justin Timberlake",
+            "Title": "Cry Me a River"
+    },
+    {
+            "Author": "Katy Perry",
+            "Title": "Firework"
+    },
+    {
+            "Author": "The Notorious B.I.G.",
+            "Title": "Juicy"
+    },
+    {
+            "Author": "Neil Young",
+            "Title": "Heart of Gold"
+    },
+    {
+            "Author": "The Cure",
+            "Title": "Just Like Heaven"
+    },
+    {
+            "Author": "Otis Redding",
+            "Title": "(Sittin' On) The Dock of the Bay"
+    },
+    {
+            "Author": "The Velvet Underground",
+            "Title": "Heroin"
+    },
+    {
+            "Author": "Drake",
+            "Title": "Hotline Bling"
+    },
+    {
+            "Author": "The Kinks",
+            "Title": "You Really Got Me"
+    },
+    {
+            "Author": "Muddy Waters",
+            "Title": "Rollin' Stone"
+    },
+    {
+            "Author": "The Byrds",
+            "Title": "Mr. Tambourine Man"
+    },
+    {
+            "Author": "R.E.M.",
+            "Title": "Losing My Religion"
+    },
+    {
+            "Author": "Lou Reed",
+            "Title": "Walk on the Wild Side"
+    },
+    {
+            "Author": "The Shirelles",
+            "Title": "Will You Love Me Tomorrow"
+    },
+    {
+            "Author": "Talking Heads",
+            "Title": "Once in a Lifetime"
+    },
+    {
+            "Author": "Johnny Cash",
+            "Title": "I Walk the Line"
+    },
+    {
+            "Author": "The Four Seasons",
+            "Title": "Can't Take My Eyes Off You"
+    },
+    {
+            "Author": "Eric Clapton",
+            "Title": "Tears in Heaven"
+    },
+    {
+            "Author": "James Brown",
+            "Title": "I Got You (I Feel Good)"
+    },
+    {
+            "Author": "Van Morrison",
+            "Title": "Brown Eyed Girl"
+    },
+    {
+            "Author": "Elvis Costello",
+            "Title": "Pump It Up"
+    },
+    {
+            "Author": "The Velvet Underground \u0026 Nico",
+            "Title": "I'm Waiting for the Man"
+    },
+    {
+            "Author": "Public Enemy",
+            "Title": "Fight the Power"
+    },
+    {
+            "Author": "The Everly Brothers",
+            "Title": "Wake Up Little Susie"
+    },
+    {
+            "Author": "John Lennon",
+            "Title": "Imagine"
+    },
+    {
+            "Author": "Creedence Clearwater Revival",
+            "Title": "Fortunate Son"
+    },
+    {
+            "Author": "Run-D.M.C.",
+            "Title": "Walk This Way"
+    },
+    {
+            "Author": "Lynyrd Skynyrd",
+            "Title": "Sweet Home Alabama"
+    },
+    {
+            "Author": "Beastie Boys",
+            "Title": "Sabotage"
+    },
+    {
+            "Author": "The Ronettes",
+            "Title": "Be My Baby"
+    },
+    {
+            "Author": "Rihanna",
+            "Title": "Umbrella"
+    },
+    {
+            "Author": "Sam Cooke",
+            "Title": "A Change Is Gonna Come"
+    },
+    {
+            "Author": "The Smiths",
+            "Title": "There Is a Light That Never Goes Out"
+    },
+    {
+            "Author": "Patti Smith",
+            "Title": "Because the Night"
+    },
+    {
+            "Author": "Pearl Jam",
+            "Title": "Alive"
+    },
+    {
+            "Author": "The Band",
+            "Title": "The Weight"
+    },
+    {
+            "Author": "Bon Jovi",
+            "Title": "Livin' on a Prayer"
+    },
+    {
+            "Author": "LCD Soundsystem",
+            "Title": "All My Friends"
+    }
+]
