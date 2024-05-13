@@ -4,10 +4,12 @@ import (
 	"database/sql"
 	"net/http"
 	"strconv"
-	
+
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
+
+const BDDPath = "./bdd/table.db"
 
 func UserCookies(w http.ResponseWriter, id int) {
 	cookie := http.Cookie{
@@ -92,7 +94,7 @@ func QueryPasswordUsers(db *sql.DB) ([]string, error) {
 }
 
 func QueryUserId(usernameOrEmail string) (int, error) {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", BDDPath)
 	if err != nil {
 		return 0, err
 	}
@@ -108,6 +110,25 @@ func QueryUserId(usernameOrEmail string) (int, error) {
 		return 0, err
 	}
 	return id, nil
+}
+
+func QueryUserName(userId int) (string, error) {
+	db, err := sql.Open("sqlite3", BDDPath)
+	if err != nil {
+		return "", err
+	}
+	defer db.Close()
+
+	query := "Select Username FROM Users WHERE UserId = ?"
+	var userName string
+	err = db.QueryRow(query, userId).Scan(&userName)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", err
+		}
+		return "", err
+	}
+	return userName, nil
 }
 
 type User struct {

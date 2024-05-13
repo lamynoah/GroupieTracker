@@ -31,6 +31,29 @@
     socket.onerror = error => {
         console.log("Socket Error: ", error);
     };
+    
+    const getRoomId = () => {
+        let id = new URLSearchParams(window.location.search).get("room")
+        return Number.parseInt(id)
+    }
 
+    function getCookie(cname) {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+    function send(JsonMsg) {
+        socket.send(JSON.stringify(JsonMsg))
+    }
 </script>
 {{end}}

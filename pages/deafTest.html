@@ -1,12 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DeafTest</title>
 </head>
+
 <body>
-    <div>test</div>
+    <h1>lyrics</h1>
+    <h3 style="white-space: pre-line;">{{.Lyrics}}</h3>
+    <label for="title">Titre de l'oeuvre :</label>
+    <input type="text" name="title" id="title"></input>
     {{template "socket" "deafTest"}}
 </body>
+
 </html>

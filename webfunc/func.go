@@ -1,328 +1,51 @@
 package webfunc
 
 import (
-	. "GT/BDD"
-	. "GT/Connect"
-	"GT/games"
+	"GT/bdd"
 	"database/sql"
-	"fmt"
-	"html/template"
 	"log"
 	"net/http"
-	"regexp"
-	"strconv"
+	"sync"
 
 	"github.com/gorilla/websocket"
+	"golang.org/x/sync/syncmap"
 )
-
-// type ptitBac struct {
-// 	Artiste    string
-// 	Album      string
-// 	Groupe     string
-// 	Instrument string
-// 	Featuring  string
-// }
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 }
 
-var ptitBacConns = ConnSet{}
+const BDDPath = "./bdd/table.db"
+
+// var ptitBacConns = ConnSet{}
 
 type PtitBacData struct {
-	// RoomName     string
-	RoomLink     string
-	PtitBacConns ConnSet
-	Data         string
+	RoomLink          string
+	PtitBacConns      syncmap.Map
+	Letter            string
+	ArrayLetter       []string
+	IsStarted         bool
+	UsersInputs       syncmap.Map
+	Timer             int
+	MaxRound          int
+	CurrentRound      int
+	Categories        []string
+	CurrentTime       int
+	IsDone            bool
+	UsersPointsInputs [](map[string]bool)
 }
 
-var arrayRoom = map[string]*PtitBacData{}
-
-func reader(conn *websocket.Conn, game string) {
-	ptitBacConns.Add(conn)
-	if len(game) > 4 {
-		game = game[4:]
-	}
-	switch game {
-	case "blindTest":
-		fmt.Println("game:", game)
-	case "deafTest":
-		fmt.Println("game:", game)
-		for {
-			messageType, p, err := conn.ReadMessage()
-			if err != nil {
-				log.Println(err)
-				return
-			}
-
-			log.Println(string(p))
-
-			if err := conn.WriteMessage(messageType, p); err != nil {
-				log.Println(err)
-				return
-			}
+func (room *PtitBacData) SendToRoom(msg any) {
+	room.PtitBacConns.Range(func(key any, v any) bool {
+		v.(*sync.Mutex).Lock()
+		defer v.(*sync.Mutex).Unlock()
+		if err := key.(*websocket.Conn).WriteJSON(msg); err != nil {
+			log.Println(err)
+			return false
 		}
-	case "ptitBac":
-		ptitBacConns.Add(conn)
-		for {
-			messageType, p, err := conn.ReadMessage()
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			if string(p) == "Connected" {
-				fmt.Println("je suis la", ptitBacConns)
-				for v := range ptitBacConns {
-					if err := v.WriteMessage(messageType, []byte("start game")); err != nil {
-						log.Println(err)
-						return
-					}
-				}
-			}
-			log.Println(string(p))
-
-			if err := conn.WriteMessage(messageType, p); err != nil {
-				log.Println(err)
-				return
-			}
-		}
-	case "loading":
-		jsonMsg := &struct {
-			Id    string
-			Start bool
-		}{}
-		fmt.Println("all connections :", ptitBacConns)
-		for {
-			err := conn.ReadJSON(jsonMsg)
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			room := arrayRoom[jsonMsg.Id]
-			room.PtitBacConns.Add(conn)
-			defaultHandler := conn.CloseHandler()
-			conn.SetCloseHandler(func(code int, text string) error {
-				room.PtitBacConns.Delete(conn)
-				return defaultHandler(code, text)
-			})
-			if jsonMsg.Start {
-				for v := range room.PtitBacConns {
-					if err := v.WriteJSON("start game"); err != nil {
-						log.Println(err)
-						return
-					}
-				}
-			}
-		}
-	default:
-		fmt.Println("Unknown game:", game)
-	}
-}
-
-func Select(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/selectGame.html")
-	temp.Execute(w, nil)
-}
-
-func Lobby(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/lobby.html")
-	temp.Execute(w, arrayRoom)
-}
-
-var dataError = struct {
-	Error string
-}{""}
-
-func Signin(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/signin.html", "./template/signin.html")
-	temp.Execute(w, dataError)
-	dataError.Error = ""
-}
-
-func CreateUser(w http.ResponseWriter, r *http.Request) {
-	username := r.FormValue("username")
-	email := r.FormValue("email")
-	password := r.FormValue("password")
-	UpperCase := regexp.MustCompile(`[A-Z]`)
-	SpecialCar := regexp.MustCompile(`[^a-zA-Z0-9]`)
-	hasNumber := regexp.MustCompile(`[0-9]`)
-	if !UpperCase.MatchString(password) && !SpecialCar.MatchString(password) && !hasNumber.MatchString(password) && len(password) < 12 {
-		dataError.Error = "Le mot de passe doit contenir au moins 1 nombre, 1 majuscule, 1 caractère spécial et doit être d'au moins 12 caractères"
-		http.Redirect(w, r, "/signin", http.StatusFound)
-		return
-	}
-	if UserNameExist(username) {
-		dataError.Error = "Cet Username est déja utilisé"
-		http.Redirect(w, r, "/signin", http.StatusFound)
-	}
-
-	hasedPassword, err := HashPassword(password)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	err = InsertUser(username, email, hasedPassword)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	userId, err := QueryUserId(username)
-	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusFound)
-	}
-	UserCookies(w, userId)
-	http.Redirect(w, r, "/selectGame", http.StatusFound)
-}
-
-func UserNameExist(username string) bool {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	query := "SELECT COUNT(*) FROM Users WHERE username = ?"
-	var count int
-	err = db.QueryRow(query, username).Scan(&count)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return count > 0
-}
-
-func Login(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/login.html")
-	fmt.Println(Islogin(r))
-	temp.Execute(w, dataError)
-	dataError.Error = ""
-}
-
-func Connect(w http.ResponseWriter, r *http.Request) {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
-	usernameOrEmail := r.FormValue("username")
-	password := r.FormValue("password")
-
-	result, err := IsMatch(usernameOrEmail, password, db)
-	if !result || err != nil {
-		fmt.Println(result, err)
-		dataError.Error = "Username or password false"
-		http.Redirect(w, r, "/login", http.StatusFound)
-		return
-	}
-	userId, err := QueryUserId(usernameOrEmail)
-	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusFound)
-		return
-	}
-	UserCookies(w, userId)
-	http.Redirect(w, r, "/selectGame", http.StatusFound)
-}
-
-func BlindTestPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/blindTest.html", "./template/websocket.html")
-	temp.Execute(w, nil)
-}
-
-func DeafTestPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/deafTest.html", "./template/websocket.html")
-	temp.Execute(w, nil)
-}
-
-func CreateRoom(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	cookie, err := r.Cookie("Id")
-	if err != nil {
-		log.Fatal(err)
-	}
-	id, err := strconv.Atoi(cookie.Value)
-	if err != nil {
-		log.Fatal(err)
-	}
-	max_player, err := strconv.Atoi(r.FormValue("playersNumber"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	room := games.ROOM{
-		Created_by:  id,
-		Max_players: max_player,
-		Name:        r.FormValue("name"),
-		Id_game:     3,
-	}
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-	InsertRooms(room.Created_by, room.Max_players, room.Name, room.Id_game)
-	arrayRoom[room.Name] = &PtitBacData{
-		"/loadingPage?room=" + room.Name,
-		ConnSet{},
-		"",
-	}
-	http.Redirect(w, r, "/loadingPage?room="+room.Name, http.StatusFound)
-}
-
-func Loading(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/loading.html", "./template/websocket.html")
-	// Si nbplayer == max_player alors on peut plus se connecter  et nous renvoie sur le lobby
-	r.ParseForm()
-	roomId := r.FormValue("room")
-	fmt.Println(roomId)
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-	query := "SELECT max_player FROM ROOMS WHERE name = ?"
-	row := db.QueryRow(query, roomId)
-
-	var maxPlayer int
-	err = row.Scan(&maxPlayer)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("max player =", maxPlayer)
-	if len(arrayRoom[roomId].PtitBacConns) > maxPlayer {
-		http.Redirect(w,r,"/lobby", http.StatusFound)
-		return
-	}
-
-	temp.Execute(w, nil)
-}
-
-func PtitbacPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/ptitBac.html")
-	letters := []string{}
-	letter := games.GenerateUniqueLetters(&letters)
-	r.ParseForm()
-	time, _ := strconv.Atoi(r.FormValue("timerSeconds"))
-	// round := r.FormValue("roundsNumber")
-	// artiste := r.FormValue("artiste")
-	// album := r.FormValue("album")
-	// groupe := r.FormValue("groupe")
-	// instrument := r.FormValue("instrument")
-	// featuring := r.FormValue("featuring")
-
-	go games.StartTimer(time)
-	temp.Execute(w, letter)
-}
-
-func SettingBacPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/settingPagesPtitBac.html")
-
-	temp.Execute(w, nil)
-}
-
-func HomePage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/home.html", "./template/websocket.html")
-	temp.Execute(w, nil)
+		return true
+	})
 }
 
 func WebSocket(w http.ResponseWriter, r *http.Request) {
@@ -335,4 +58,45 @@ func WebSocket(w http.ResponseWriter, r *http.Request) {
 	log.Println("Client connected successfully")
 	uri := r.RequestURI
 	reader(ws, uri)
+}
+
+// On prends [3].categories  si majorité false == 0 sinon true == 2 et si reponse non unique score == 1
+type Validation struct {
+	UserName string `json:"username"`
+	Input    string `json:"input"`
+	Value    bool   `json:"value"`
+}
+
+// var test = map[string]bool{`{"username":"noah12","category":"Album","input":"sss"}`: true, `{"username":"noah12","category":"Artiste","input":"ss"}`: false, `{"username": "noah12", "category": "Featuring", "input": "ss"}`: true, `{"username":"noah12","category":"Groupe de musique","input":"ss"}`: true, `{"username":"noah12","category":"Instrument de musique","input":"ss"}`: true}
+
+func AddScoreToPlayer(roomId, userId, number int) {
+	_, scores, err := bdd.QueryRoomUsersScores(roomId)
+	if err != nil {
+		log.Println("AddScoreToPlayer(QueryRoomUsersScores):", err)
+	}
+	userScore := scores[userId]
+	_ = userScore
+	db, err := sql.Open("sqlite3", BDDPath)
+	if err != nil {
+		log.Println("AddScoreToPlayer(Open):", err)
+	}
+	_, err = db.Exec("UPDATE ROOM_USERS SET score = score + ? WHERE id_user = ? AND id_room = ?", number, userId, roomId)
+	if err != nil {
+		log.Println("AddScoreToPlayer(Exec):", err)
+	}
+}
+
+// Recup la cate  puis
+func (room *PtitBacData) isRight(key string) bool {
+	nbplayers := lenOfMap(&room.PtitBacConns)
+	count := 0
+	for _, v := range room.UsersPointsInputs {
+		if v[key] {
+			count++
+		}
+		if count >= nbplayers/2 {
+			return true
+		}
+	}
+	return false
 }

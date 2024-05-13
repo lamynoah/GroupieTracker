@@ -1,30 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>loading</title>
 </head>
 
 <body>
-    <div> ATTENDS </div>
-    <!-- <a href="/ptitBac.html"><button> Start Game</button></a> -->
-    <button onclick="socket.send(JSON.stringify({ Id:getRoomId(), Start: true }))">Start all</button>
+    <div> En attente que les autres joueurs rejoignent </div>
+    <div>joueurs connectés : <span id="users"></span></div>
+    {{if . }}<button onclick="send(new JsonMsg(getRoomId(), Number.parseInt(getCookie('Id')), true))" disabled>Start all</button>{{end}}
     {{template "socket" "loading"}}
+    {{if . }}
     <script>
-        const getRoomId = () => new URLSearchParams(window.location.search).get("room")
+        class JsonMsg{
+            constructor(id_room, id_user, start){
+                this.id_room = id_room
+                this.id_user = id_user
+                this.start = start
+            }
+        }
         socket.onopen = () => {
-            console.log(JSON.stringify({ Id: getRoomId(), Start: false }));
-            socket.send(JSON.stringify({ Id: getRoomId(), Start: false }))
-        };
+            send(new JsonMsg(getRoomId(), Number.parseInt(getCookie('Id'))), false)
+            document.querySelector("button").removeAttribute("disabled")
+        }
+        const users = document.getElementById("users")
         socket.onmessage = msg => {
             console.log(msg.data)
-            if (JSON.parse(msg.data) === "start game") {
-                window.location.replace("http://localhost:8080/ptitBac");
+            let data = JSON.parse(msg.data)
+            if (data === "start game") {
+                window.location.replace("http://localhost:8080/ptitBac" + window.location.search);
+            } else if (Array.isArray(data)) {
+                if (users.children) Array.from(users.children).forEach(e=>e.remove())
+                users.textContent = data.join(', ')
             }
         }
     </script>
+    {{else}}
+    <script>
+        class JsonMsg{
+            constructor(id_room, id_user, Start){
+                this.id_room = id_room
+                this.id_user = id_user
+                this.Start = Start
+            }
+        }
+        socket.onopen = () => {
+            send(new JsonMsg(getRoomId(), Number.parseInt(getCookie('Id')), false))
+        }
+        users = document.getElementById("users")
+        socket.onmessage = msg => {
+            let data = JSON.parse(msg.data)
+            console.log(data)
+            if (data === "start game") {
+                window.location.replace("http://localhost:8080/ptitBac" + window.location.search);
+            } else if (Array.isArray(data)) {
+                if (users.children) Array.from(users.children).forEach(e=>e.remove())
+                users.textContent = data.join(', ')
+            }
+        }
+    </script>
+    {{end}}
+    
 </body>
 
 </html>
