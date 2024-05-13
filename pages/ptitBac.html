@@ -1,54 +1,228 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PetitBac</title>
+    <link rel="stylesheet" type="text/css" href="/static/styles/ptitbac.css">
 </head>
 
+{{$l := .Letter}}
+
 <body>
-    <h1> Letter : {{.}} </h1>
-
-
-    <form action="/result" method="post">
-        <label for="artiste">Artiste:</label>
-        <input type="text" name="artiste" id="artiste" autofocus autocomplete="off" required /><br>
-
-        <label for="album">Album:</label>
-        <input type="text" name="album" id="album" autocomplete="off" required /><br>
-
-        <label for="groupe">Groupe de musique:</label>
-        <input type="text" name="groupe" id="groupe" autocomplete="off" required /><br>
-
-        <label for="instrument">Instrument de musique:</label>
-        <input type="text" name="instrument" id="instrument" autocomplete="off" required /><br>
-
-        <label for="featuring">Featuring:</label>
-        <input type="text" name="featuring" id="featuring" autocomplete="off" required /><br>
-        <input type="submit" value=" FINISH">
-    </form>
+    <div id="in-game">
+        <h1> Lettre : <span id="letter">{{.Letter}}</span></h1>
+        <div id="timer">{{.Time}}s</div>
+        <div> Nombre de round : <span id="round">{{ .CurrentRound}}</span> / {{.MaxRound}}</div>
+        {{range .Categories}}
+        <label for="{{.}}">{{.}}:</label>
+        <input placeholder="{{$l}}..." type="text" name="{{.}}" id="{{.}}" autocomplete="off" required /><br>
+        {{end}}
+        <input id="send" type="submit" value="FINISH" />
+    </div>
+    <div id="result" style="display: none;">
+        <h1>Resultat</h1>
+        {{range .Categories}}
+        <h3>{{.}}</h3>
+        <ul class="user-result"></ul>
+        {{end}}
+        {{if .IsCreator}}
+        <button onclick="send(new JsonMsg(getRoomId(), id_user, false, [], true))">Round
+            Suivant</button>
+        {{end}}
+    </div>
+    {{template "socket" "ptitBac"}}
     <script>
-        let socket = new WebSocket("ws://localhost:8080/ws");
-        console.log("Attempting Connection...");
+        class JsonMsg {
+            constructor(id_room, id_user, Done, data, NextRound, inputs) {
+                this.id_room = id_room
+                this.id_user = id_user
+                this.Done = Done
+                this.data = data
+                this.NextRound = NextRound
+                this.inputs = inputs
+            }
+        }
+        let time = Number.parseInt("{{.Time}}")
+        let round = Number.parseInt("{{.CurrentRound}}")
+        let inputs = Array.from(document.querySelectorAll("input[type='text']"))
+        let id_user = Number.parseInt(getCookie('Id'))
+
+        const timerDiv = document.querySelector("#timer")
+        if (time < 1) { // || JSON.parse("{{.IsDone}}")) {
+            toggleDisplay()
+        }
+
+        let inter;
+        function startTimer(startTime = null) {
+            if (inter) clearInterval(inter)
+            if (document.getElementById("timer").hasAttribute("style")) document.getElementById("timer").removeAttribute("style")
+            if (startTime) time = startTime
+            timerDiv.textContent = `${time}s`
+            inter = setInterval(() => {
+                time--
+                timerDiv.textContent = `${time}s`
+                if (time === 10) timerDiv.style.color = "red"
+                else if (time < 1) {
+                    clearInterval(inter)
+                }
+            }, 1000)
+        }
+        startTimer()
+
+        function toggleDisplay() {
+            const game = document.querySelector("#in-game")
+            const result = document.querySelector("#result")
+            if (game.hasAttribute("style")) {
+                game.removeAttribute("style")
+                result.style.display = "none"
+            } else {
+                game.style.display = "none"
+                result.removeAttribute("style")
+            }
+        }
 
         socket.onopen = () => {
-            console.log("Successfully Connected");
-            socket.send("Hi From the Client!")
-        };
-
-        socket.onclose = event => {
-            console.log("Socket Closed Connection: ", event);
-            socket.send("Client Closed!")
-        };
-
+            const data = new JsonMsg(getRoomId(), 0, false, [], false)
+            console.log(data)
+            send(data)
+        }
         socket.onmessage = msg => {
-            console.log("Message Recieved: ", msg);
-        };
+            class Validation {
+                constructor(username, input, value) {
+                    this.username = username
+                    this.input = input
+                    this.value = value
+                }
+            }
+            console.log("recieved :", msg.data)
+            let obj = JSON.parse(msg.data)
+            // obj = {letter: "L"}
+            // "{letter : " + room.Letter + " }"
+            // "end round"
+            // "end round"
+            // map[username]inputs
+            if (obj.letter) {
+                //send Inputs
+                let data = new JsonMsg(getRoomId(), id_user, false, [], false, getInputs())
+                send(data)
+                console.log("sended inputs :", data)
 
-        socket.onerror = error => {
-            console.log("Socket Error: ", error);
-        };
+                // console.log("change round the new letter is :", obj.letter)
+                // console.log("change round the new time is :", obj.time)
+                const newLetter = document.getElementById("letter")
+                newLetter.textContent = obj.letter
+                inputs.forEach(e => {
+                    e.value = ""
+                    e.placeholder = obj.letter + "..."
+                })
+                startTimer(obj.time)
+                toggleDisplay()
+                round++
+                document.getElementById("round").textContent = round
+                Array.from(document.getElementsByTagName("li")).forEach(e => e.remove())
+                // lettere : 1 dans mon go j 'ai ma lettre 2 , et je veux remplacer ma lettre 1 par la 2 '
+            } else if (typeof obj === "object") {
+                Array.from(document.getElementsByTagName("li")).forEach(e => e.remove())
+                const divs = document.getElementsByClassName("user-result")
+                const map = new Map(Object.entries(obj))
+                map.forEach((value, key) => value.forEach((v, i) => {
+                    const li = document.createElement("li")
+                    li.textContent = `${key}: ${v}`
+                    const btnVerif = document.createElement("button")
+                    btnVerif.classList.toggle("true")
+                    btnVerif.onclick = function () {
+                        const category = key;
+                        const value = v;
+                        if (btnVerif.classList.contains("true")) {
+                            btnVerif.classList.toggle("true")
+                            btnVerif.classList.toggle("false")
+                        } else {
+                            btnVerif.classList.toggle("false")
+                            btnVerif.classList.toggle("true")
+                        }
+                    }
+
+                    li.appendChild(btnVerif)
+                    divs[i].append(li)
+                }))
+            }
+            switch (obj) {
+                case "end round":
+                    if (inter) clearInterval(inter)
+                    toggleDisplay()
+                    const arr = Array.from(document.querySelectorAll("input[type='text']")).map(e => e.value)
+                    // console.log(arr)
+                    send(new JsonMsg(getRoomId(), Number.parseInt(getCookie("Id")), false, arr, false))
+                    break;
+                case "end game":
+                    //send Inputs
+                    let data = new JsonMsg(getRoomId(), id_user, false, [], false, getInputs())
+                    send(data)
+                    console.log("sended inputs :", data)
+                    console.log("end game")
+                    window.location.replace("http://localhost:8080/score" + window.location.search)
+                    break;
+            }
+        }
+        document.querySelector("#send").addEventListener("click", e => {
+            const data = new JsonMsg(getRoomId(), 0, true, [], false)
+            send(data)
+            console.log("send :", data)
+        })
+
+        // [id_user, catégorie, input, valeur button] -> {1} on regarde s il = other[2] si c est le cas score +1 sinon +2
+
+        class Validation {
+            constructor(username, category, input) {
+                this.username = username
+                this.category = category
+                this.input = input
+            }
+        }
+        function getInputs() {
+            let categories = Array.from(document.querySelectorAll("#result > h3")).map(e => e.textContent)
+            let result = {}
+            Array.from(document.querySelectorAll("#result > ul")).forEach((ul, i) => {
+                Array.from(ul.getElementsByTagName("li")).forEach(li => {
+                    let username = li.textContent.split(":")[0].trim()
+                    let input = li.textContent.split(":")[1].trim()
+                    let value = li.querySelector("button").classList.contains("true")
+                    // result.set({username:username, category: categories[i], input: input}, value)
+                    // result[`${username}-${categories[i]}-${input}`]= value;
+                    result[JSON.stringify({ username: username, category: categories[i], input: input })] = value;
+                })
+            })
+            console.log(result)
+            return result
+        }
+
+        /*
+        // function getInputs() {
+        //     let categories = Array.from(document.querySelectorAll("#result > h3")).map(e => e.textContent)
+        //     let result = {}
+        //     Array.from(document.querySelectorAll("#result > ul")).forEach((ul, i) => {
+        //         result[categories[i]] = Array.from(ul.getElementsByTagName("li")).map(li => {
+        //             let username = li.textContent.split(":")[0].trim()
+        //             let input = li.textContent.split(":")[1].trim()
+        //             let value = li.getElementsByTagName("button")[0].classList.contains("true") ? true : false
+        //             return new Validation(username, input, value)
+        //         })
+        //     })
+        //     // console.log(Object.entries(result))
+        //     return result
+        // }
+
+        // function sendInputs() {
+        //     let categories = Array.from(document.querySelectorAll("#result > h3")).map(e => e.textContent)
+        //     Array.from(document.querySelectorAll("#result > ul")).forEach(e => {
+        //         let e = document.createElement("ul")
+        //         const cat = e.textContent
+        //         Array.from(e.childNodes).forEach()
+        //     })
+        // }
+        */
     </script>
 </body>
 
