@@ -38,19 +38,19 @@ func reader(conn *websocket.Conn, game string) {
 	case "ptitBac":
 		
 		jsonMsg := &struct {
-			Id        int                           					 `json:"id_room"`
-			UserId    int                           					 `json:"id_user"`
-			Done      bool                          					 `json:"Done"`
-			Data      []string                      					 `json:"data"`
-			NextRound bool                          					 `json:"NextRound"`
-			Inputs    struct{Category string; Inputs []games.Validation} `json:"inputs"`
+			Id        int                         `json:"id_room"`
+			UserId    int                         `json:"id_user"`
+			Done      bool                        `json:"Done"`
+			Data      []string                    `json:"data"`
+			NextRound bool                        `json:"NextRound"`
+			Inputs    map[string][]games.Validation `json:"inputs"`
 		}{}
 		for {
 			err := conn.ReadJSON(jsonMsg)
 			if err != nil {
 				log.Println(err)
 			}
-			fmt.Println("inputs :", jsonMsg.Inputs)
+			fmt.Println("msg :", jsonMsg)
 			room := arrayRoom[jsonMsg.Id]
 			room.PtitBacConns.Store(conn, &sync.Mutex{})
 
@@ -66,11 +66,9 @@ func reader(conn *websocket.Conn, game string) {
 				room.IsStarted = true
 				room.IsDone = true
 				room.SendToRoom("end round")
-				continue
 			}
 			if jsonMsg.NextRound {
 				room.NextRound()
-				continue
 			} else if len(jsonMsg.Data) > 0 {
 				username, err := connect.QueryUserName(jsonMsg.UserId)
 				if err != nil {
@@ -84,10 +82,10 @@ func reader(conn *websocket.Conn, game string) {
 				})
 				room.SendToRoom(ui)
 				fmt.Println(&room.UsersInputs)
-				continue
-			} else if len(jsonMsg.Inputs.Inputs) > 0 {
+			} else if len(jsonMsg.Inputs) > 0 {
 				fmt.Println("inputs :", jsonMsg.Inputs)
-				room.UsersPointsInputs = append(room.UsersPointsInputs, jsonMsg.Inputs.Inputs)
+				room.UsersPointsInputs = append(room.UsersPointsInputs, jsonMsg.Inputs)
+				// room.UsersPointsInputs = jsonMsg.Inputs
 				continue
 			}
 		}

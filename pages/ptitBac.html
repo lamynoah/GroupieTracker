@@ -28,25 +28,26 @@
         <ul class="user-result"></ul>
         {{end}}
         {{if .IsCreator}}
-        <button onclick="send(new JsonMsg(getRoomId(), Number.parseInt(getCookie('Id')), false, [], true, []))">Round
+        <button onclick="send(new JsonMsg(getRoomId(), id_user, false, [], true))">Round
             Suivant</button>
         {{end}}
     </div>
     {{template "socket" "ptitBac"}}
     <script>
         class JsonMsg {
-            constructor(id_room, id_user, Done, data, NextRound, inputs) {
+            constructor(id_room, id_user, Done, data, NextRound) {//, inputs) {
                 this.id_room = id_room
                 this.id_user = id_user
                 this.Done = Done
                 this.data = data
                 this.NextRound = NextRound
-                this.inputs = inputs
+                // this.inputs = inputs
             }
         }
         let time = Number.parseInt("{{.Time}}")
         let round = Number.parseInt("{{.CurrentRound}}")
         let inputs = Array.from(document.querySelectorAll("input[type='text']"))
+        let id_user = Number.parseInt(getCookie('Id'))
 
         const timerDiv = document.querySelector("#timer")
         if (time < 1) { // || JSON.parse("{{.IsDone}}")) {
@@ -82,7 +83,7 @@
         }
 
         socket.onopen = () => {
-            const data = new JsonMsg(getRoomId(), 0, false, [], false, [])
+            const data = new JsonMsg(getRoomId(), 0, false, [], false)
             console.log(data)
             send(data)
         }
@@ -103,7 +104,7 @@
             // map[username]inputs
             if (obj.letter) {
                 //send Inputs
-                send(getInputs())
+                send(new JsonMsg(getRoomId(),id_user, false, [], getInputs()))
 
                 // console.log("change round the new letter is :", obj.letter)
                 // console.log("change round the new time is :", obj.time)
@@ -150,7 +151,7 @@
                     toggleDisplay()
                     const arr = Array.from(document.querySelectorAll("input[type='text']")).map(e => e.value)
                     // console.log(arr)
-                    send(new JsonMsg(getRoomId(), Number.parseInt(getCookie("Id")), false, arr, false, []))
+                    send(new JsonMsg(getRoomId(), Number.parseInt(getCookie("Id")), false, arr, false))
                     break;
                 case "end game":
                     console.log("end game")
@@ -159,7 +160,7 @@
             }
         }
         document.querySelector("#send").addEventListener("click", e => {
-            const data = new JsonMsg(getRoomId(), 0, true, [], false, [])
+            const data = new JsonMsg(getRoomId(), 0, true, [], false)
             send(data)
             console.log("send :", data)
         })
