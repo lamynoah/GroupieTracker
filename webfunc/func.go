@@ -43,6 +43,19 @@ type PtitBacData struct {
 	UsersPointsInputs [](map[string]bool)
 }
 
+type BlindTestData struct {
+	ID             int
+	RoomLink       string
+	BlindTestConns syncmap.Map
+	IsStarted      bool
+	UsersInputs    sync.Map
+	Timer          int
+	MaxRounds      int
+	CurrentRound   int
+	CurrentTime    int
+	IsDone         bool
+}
+
 func (room *PtitBacData) getId() int {
 	return room.id
 }
@@ -58,6 +71,23 @@ func (room *PtitBacData) SendToRoom(msg any) {
 		return true
 	})
 }
+
+
+func (room *BlindTestData) SendToRoom(msg any) {
+	room.BlindTestConns.Range(func(key any, v any) bool {
+		v.(*sync.Mutex).Lock()
+		defer v.(*sync.Mutex).Unlock()
+		if err := key.(*websocket.Conn).WriteJSON(msg); err != nil {
+			log.Println(err)
+			return false
+		}
+		return true
+	})
+}
+
+
+
+
 
 func WebSocket(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lobby</title>
+</head>
+
+<body>
+    <div> Lobby ptit bac</div>
+    <!-- <div>  faire template pour chaque Jeu </div> -->
+    <a href="/settingBlindtest"><button>Nouveau Salon</button></a>
+    <ul class="list">
+        {{range $i, $v := .}}
+        {{if not $v.IsStarted}} <li><a href="loadingPage{{$v.RoomLink}}">{{$i}}</a></li> {{end}}
+        {{end}}
+    </ul>
+
+
+</body>
+
+</html>
