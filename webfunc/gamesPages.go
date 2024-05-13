@@ -16,6 +16,7 @@ func BlindTestPage(w http.ResponseWriter, r *http.Request) {
 	temp.Execute(w, nil)
 }
 
+// MARK: DeafTestPage
 func DeafTestPage(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/deafTest.html", "./template/websocket.html")
 	temp.Execute(w, nil)
@@ -68,6 +69,9 @@ func Loading(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/loading.html", "./template/websocket.html")
 	r.ParseForm()
 	roomId, err := strconv.Atoi(r.FormValue("room"))
+	if err != nil {
+		log.Fatal(err)
+	}
 	userId := getUserIdFromPage(r)
 	db, err := sql.Open("sqlite3", BDDPath)
 	if err != nil {

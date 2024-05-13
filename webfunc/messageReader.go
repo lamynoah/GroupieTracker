@@ -4,7 +4,6 @@ import (
 	"GT/bdd"
 	"GT/connect"
 
-	// "GT/games"
 	"fmt"
 	"log"
 	"sync"
@@ -69,9 +68,9 @@ func reader(conn *websocket.Conn, game string) {
 				room.SendToRoom("end round")
 			}
 			switch {
-			case jsonMsg.NextRound : 
+			case jsonMsg.NextRound:
 				room.NextRound()
-			case len(jsonMsg.Data) > 0 : 
+			case len(jsonMsg.Data) > 0:
 				username, err := connect.QueryUserName(jsonMsg.UserId)
 				if err != nil {
 					log.Println("useridQuery : ", err)
@@ -83,12 +82,13 @@ func reader(conn *websocket.Conn, game string) {
 					return true
 				})
 				room.SendToRoom(ui)
-			case len(jsonMsg.Inputs) > 0 : 
+			case len(jsonMsg.Inputs) > 0:
 				fmt.Println("inputs :", jsonMsg.Inputs)
 				room.UsersPointsInputs = append(room.UsersPointsInputs, jsonMsg.Inputs)
-				AddScoreToPlayer(jsonMsg.Id, jsonMsg.UserId, 5)
+				// AddScoreToPlayer(jsonMsg.Id, jsonMsg.UserId, 5)
+				go room.CalcPoints()
 			}
-			
+
 		}
 	case "loading":
 		jsonMsg := &struct {

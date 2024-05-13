@@ -8,14 +8,19 @@
 </head>
 
 <body>
-    <div> En attente que les autres joueurs rejoignent </div>
+    <div> En attente que les autres joueurs rejoignent <button
+            onclick="navigator.clipboard.writeText(location.href)">Click to copy link (need to be connected)</button>
+    </div>
     <div>joueurs connectés : <span id="users"></span></div>
-    {{if . }}<button onclick="send(new JsonMsg(getRoomId(), Number.parseInt(getCookie('Id')), true))" disabled>Start all</button>{{end}}
+    {{if . }}
+    <button id="sendall" onclick="send(new JsonMsg(getRoomId(), Number.parseInt(getCookie('Id')), true))" disabled>Start
+        all</button>
+    {{end}}
     {{template "socket" "loading"}}
     {{if . }}
     <script>
-        class JsonMsg{
-            constructor(id_room, id_user, start){
+        class JsonMsg {
+            constructor(id_room, id_user, start) {
                 this.id_room = id_room
                 this.id_user = id_user
                 this.start = start
@@ -23,7 +28,7 @@
         }
         socket.onopen = () => {
             send(new JsonMsg(getRoomId(), Number.parseInt(getCookie('Id'))), false)
-            document.querySelector("button").removeAttribute("disabled")
+            document.querySelector("#sendall").removeAttribute("disabled")
         }
         const users = document.getElementById("users")
         socket.onmessage = msg => {
@@ -32,15 +37,15 @@
             if (data === "start game") {
                 window.location.replace("http://localhost:8080/ptitBac" + window.location.search);
             } else if (Array.isArray(data)) {
-                if (users.children) Array.from(users.children).forEach(e=>e.remove())
+                if (users.children) Array.from(users.children).forEach(e => e.remove())
                 users.textContent = data.join(', ')
             }
         }
     </script>
     {{else}}
     <script>
-        class JsonMsg{
-            constructor(id_room, id_user, Start){
+        class JsonMsg {
+            constructor(id_room, id_user, Start) {
                 this.id_room = id_room
                 this.id_user = id_user
                 this.Start = Start
@@ -56,13 +61,13 @@
             if (data === "start game") {
                 window.location.replace("http://localhost:8080/ptitBac" + window.location.search);
             } else if (Array.isArray(data)) {
-                if (users.children) Array.from(users.children).forEach(e=>e.remove())
+                if (users.children) Array.from(users.children).forEach(e => e.remove())
                 users.textContent = data.join(', ')
             }
         }
     </script>
     {{end}}
-    
+
 </body>
 
 </html>
