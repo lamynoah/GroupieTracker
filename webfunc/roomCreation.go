@@ -63,6 +63,7 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 
 	//MARK: Init Room
 	arrayRoom[roomID] = &PtitBacData{
+		id:           roomID,
 		RoomLink:     "?room=" + fmt.Sprint(roomID),
 		Letter:       letter,
 		ArrayLetter:  letters,
