@@ -21,15 +21,12 @@ func main() {
 	http.HandleFunc("/createUser", webfunc.CreateUser)
 	http.HandleFunc("/login", webfunc.Login)
 	http.HandleFunc("/loginUser", webfunc.Connect)
-	http.HandleFunc("/blindtest", webfunc.BlindtestPage)
 	http.HandleFunc("/deaftest", webfunc.DeafTestPage)
 	http.HandleFunc("/ptitbac", webfunc.PtitbacPage)
 	http.HandleFunc("/getTrackID", webfunc.GetTrackID)
 	// games routes
 	http.HandleFunc("/selectGame", webfunc.Select)
 	http.HandleFunc("/blindTest", webfunc.BlindTestPage)
-	http.HandleFunc("/deafTest", webfunc.DeafTestPage)
-	http.HandleFunc("/ptitBac", webfunc.PtitbacPage)
 	http.HandleFunc("/settingBacPage", webfunc.SettingBacPage)
 	http.HandleFunc("/lobby", webfunc.Lobby)
 	http.HandleFunc("/loadingPage", webfunc.Loading)
@@ -46,15 +43,14 @@ func main() {
 	//conn, _ := net.Dial("tcp", "google.com:http")
 	//fmt.Println(conn.LocalAddr())
 
-	bdd.DeleteRoomsUser()
+	// Reset Rooms & RoomUsers
+	bdd.DeleteRooms()
+	bdd.DeleteRoomUsers()
 
 	// Create css directory
 	fs := http.FileServer(http.Dir("static/"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	fmt.Println("Listening on port 8080")
-	fs := http.FileServer(http.Dir("static/"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
 	fmt.Println("http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
 }
