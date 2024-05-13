@@ -21,7 +21,7 @@ func main() {
 	http.HandleFunc("/login", webfunc.Login)
 	http.HandleFunc("/loginUser", webfunc.Connect)
 	http.HandleFunc("/blindtest", webfunc.BlindtestPage)
-	http.HandleFunc("/deafTest", webfunc.DeafTestPage)
+	http.HandleFunc("/deaftest", webfunc.DeafTestPage)
 	http.HandleFunc("/ptitbac", webfunc.PtitbacPage)
 	http.HandleFunc("/getTrackID", webfunc.GetTrackID)
 	http.HandleFunc("/ws", webfunc.WebSocket)
@@ -34,6 +34,8 @@ func main() {
 	//fmt.Println(conn.LocalAddr())
 
 	fmt.Println("Listening on port 8080")
+	fs := http.FileServer(http.Dir("static/"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 	fmt.Println("http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
 }

@@ -260,7 +260,7 @@ func SettingBacPage(w http.ResponseWriter, r *http.Request) {
 
 func DeafTestPage(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/deafTest.html", "./template/websocket.html")
-	temp.Execute(w, nil)
+	temp.Execute(w, "he ben j'les enfonc'rai jusqu'a c'que j'en creve\r\net comme goldman j'irai au bout d'mes reves")
 }
 
 func CreateRoom(w http.ResponseWriter, r *http.Request) {
