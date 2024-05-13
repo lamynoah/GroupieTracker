@@ -67,7 +67,7 @@ type Validation struct {
 	Value    bool   `json:"value"`
 }
 
-var test = map[string]bool{`{"username":"noah12","category":"Album","input":"sss"}`: true, `{"username":"noah12","category":"Artiste","input":"ss"}`: false, `{"username": "noah12", "category": "Featuring", "input": "ss"}`: true, `{"username":"noah12","category":"Groupe de musique","input":"ss"}`: true, `{"username":"noah12","category":"Instrument de musique","input":"ss"}`: true}
+// var test = map[string]bool{`{"username":"noah12","category":"Album","input":"sss"}`: true, `{"username":"noah12","category":"Artiste","input":"ss"}`: false, `{"username": "noah12", "category": "Featuring", "input": "ss"}`: true, `{"username":"noah12","category":"Groupe de musique","input":"ss"}`: true, `{"username":"noah12","category":"Instrument de musique","input":"ss"}`: true}
 
 func AddScoreToPlayer(roomId, userId, number int) {
 	_, scores, err := bdd.QueryRoomUsersScores(roomId)
@@ -86,12 +86,17 @@ func AddScoreToPlayer(roomId, userId, number int) {
 	}
 }
 
-
-// Recup la cate  puis 
+// Recup la cate  puis
 func (room *PtitBacData) isRight(key string) bool {
-	arr := []bool{}
-	for _, v := range room.UsersPointsInputs{
-		arr = append(arr, v[key])
+	nbplayers := lenOfMap(&room.PtitBacConns)
+	count := 0
+	for _, v := range room.UsersPointsInputs {
+		if v[key] {
+			count++
+		}
+		if count >= nbplayers/2 {
+			return true
+		}
 	}
-	return 
+	return false
 }
