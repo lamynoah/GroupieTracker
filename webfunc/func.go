@@ -36,6 +36,19 @@ type PtitBacData struct {
 	UsersPointsInputs [](map[string]bool)
 }
 
+
+type DeafTestData struct {
+	RoomLink   string
+	DeafTestConns syncmap.Map
+	IsStarted  bool
+	UsersInputs syncmap.Map
+	Timer      int
+	MaxRound   int
+	CurrentRound int
+	CurrentTime int
+	IsDone     bool
+}
+
 func (room *PtitBacData) SendToRoom(msg any) {
 	room.PtitBacConns.Range(func(key any, v any) bool {
 		v.(*sync.Mutex).Lock()
