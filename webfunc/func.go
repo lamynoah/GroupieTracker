@@ -1,6 +1,7 @@
 package webfunc
 
 import (
+	"GT/api"
 	"GT/bdd"
 	"GT/connect"
 	"database/sql"
@@ -40,6 +41,19 @@ type PtitBacData struct {
 	CurrentTime       int
 	IsDone            bool
 	UsersPointsInputs [](map[string]bool)
+}
+
+type BlindTestData struct {
+	ID             int
+	RoomLink       string
+	BlindTestConns syncmap.Map
+	IsStarted      bool
+	UsersInputs    sync.Map
+	Timer          int
+	MaxRounds      int
+	CurrentRound   int
+	CurrentTime    int
+	IsDone         bool
 }
 
 func (room *PtitBacData) getId() int {
@@ -84,6 +98,23 @@ func (room *PtitBacData) SendToRoom(msg any) {
 	})
 }
 
+
+func (room *BlindTestData) SendToRoom(msg any) {
+	room.BlindTestConns.Range(func(key any, v any) bool {
+		v.(*sync.Mutex).Lock()
+		defer v.(*sync.Mutex).Unlock()
+		if err := key.(*websocket.Conn).WriteJSON(msg); err != nil {
+			log.Println(err)
+			return false
+		}
+		return true
+	})
+}
+
+
+
+
+
 func WebSocket(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	ws, err := upgrader.Upgrade(w, r, nil)
@@ -94,6 +125,11 @@ func WebSocket(w http.ResponseWriter, r *http.Request) {
 	log.Println("Client connected successfully")
 	uri := r.RequestURI
 	reader(ws, uri)
+}
+
+func GetTrackID(w http.ResponseWriter, r *http.Request) {
+	trackID := api.RequestSong()
+	w.Write([]byte(trackID))
 }
 
 // On prends [3].categories  si majorité false == 0 sinon true == 2 et si reponse non unique score == 1

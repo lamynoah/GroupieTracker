@@ -155,7 +155,7 @@ func reader(conn *websocket.Conn, game string) {
 				fmt.Println("non :", jsonMsg.Start, r.Created_by == jsonMsg.UserId)
 			}
 		}
-	case "loadingDeafTest":
+	case "loadingBlindtest":
 		jsonMsg := &struct {
 			Id     int  `json:"id_room"`
 			UserId int  `json:"id_user"`
@@ -165,11 +165,10 @@ func reader(conn *websocket.Conn, game string) {
 			err := conn.ReadJSON(jsonMsg)
 			if err != nil {
 				log.Println(err)
-				break
+				return
 			}
-			// fmt.Println("loadingDeafTest:", jsonMsg)
-			room := arrayRoomDeaftest[jsonMsg.Id]
-			room.DeafTestConns.Store(conn, &sync.Mutex{})
+			room := arrayRommBlindtest[jsonMsg.Id]
+			room.BlindTestConns.Store(conn, &sync.Mutex{})
 			users, err := bdd.QueryRoomUsers(jsonMsg.Id)
 			if err != nil {
 				log.Println(err)
@@ -177,7 +176,7 @@ func reader(conn *websocket.Conn, game string) {
 			room.SendToRoom(&users)
 			defaultHandler := conn.CloseHandler()
 			conn.SetCloseHandler(func(code int, text string) error {
-				room.DeafTestConns.Delete(conn)
+				room.BlindTestConns.Delete(conn)
 				return defaultHandler(code, text)
 			})
 
@@ -185,11 +184,10 @@ func reader(conn *websocket.Conn, game string) {
 			if err != nil {
 				log.Println(err)
 			}
+			fmt.Println(jsonMsg)
 			if jsonMsg.Start && r.Created_by == jsonMsg.UserId {
 				room.IsStarted = true
 				go room.StartTimer()
-				room.CurrentSong = GetSong()
-				fmt.Println("before start :", room.CurrentSong)
 				room.SendToRoom("start game")
 			} else {
 				fmt.Println("non :", jsonMsg.Start, r.Created_by == jsonMsg.UserId)
