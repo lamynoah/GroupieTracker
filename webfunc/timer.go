@@ -17,8 +17,8 @@ func (room *PtitBacData) NextRound() {
 		room.Letter = games.GenerateUniqueLetters(&room.ArrayLetter)
 		room.CurrentTime = room.Timer
 		room.SendToRoom(struct {
-		Letter string `json:"letter"`
-		Time   int    `json:"time"`
+			Letter string `json:"letter"`
+			Time   int    `json:"time"`
 		}{room.Letter, room.Timer})
 		go room.StartTimer()
 	} else if room.CurrentRound == room.MaxRound {
