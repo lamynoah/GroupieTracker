@@ -60,6 +60,32 @@ func (room *PtitBacData) getId() int {
 	return room.id
 }
 
+type DeafTestData struct {
+	Id            int
+	RoomLink      string
+	DeafTestConns syncmap.Map
+	IsStarted     bool
+	UsersInputs   syncmap.Map
+	Timer         int
+	MaxRound      int
+	CurrentRound  int
+	CurrentSong   Song
+	CurrentTime   int
+	IsDone        bool
+}
+
+func (room *DeafTestData) SendToRoom(msg any) {
+	room.DeafTestConns.Range(func(key any, v any) bool {
+		v.(*sync.Mutex).Lock()
+		defer v.(*sync.Mutex).Unlock()
+		if err := key.(*websocket.Conn).WriteJSON(msg); err != nil {
+			log.Println(err)
+			return false
+		}
+		return true
+	})
+}
+
 func (room *PtitBacData) SendToRoom(msg any) {
 	room.PtitBacConns.Range(func(key any, v any) bool {
 		v.(*sync.Mutex).Lock()
@@ -133,21 +159,14 @@ func AddScoreToPlayer(roomId, userId, number int) {
 	}
 }
 
-// Recup la cate  puis
-func (room *PtitBacData) IsRight(key string) bool {
-	nbplayers := lenOfMap(&room.PtitBacConns)
-	count := 0
-	for _, v := range room.UsersPointsInputs {
-		if v[key] {
-			count++
+func (room *DeafTestData) CalcPoints() {
+	room.UsersInputs.Range(func(key, value any) bool {
+		if CleanStr(value.(string)) == CleanStr(room.CurrentSong.Author) || CleanStr(value.(string)) == CleanStr(room.CurrentSong.Title) {
+			AddScoreToPlayer(room.Id, key.(int), 1)
 		}
-		if count >= nbplayers/2 {
-			return true
-		}
-	}
-	return false
+		return true
+	})
 }
-
 func (room *PtitBacData) CalcPoints() {
 	type Inputed struct {
 		Username string `json:"username"`
@@ -199,6 +218,21 @@ func (room *PtitBacData) CalcPoints() {
 		}
 	}
 	// db.Close()
+}
+
+// Recup la cate  puis
+func (room *PtitBacData) IsRight(key string) bool {
+	nbplayers := lenOfMap(&room.PtitBacConns)
+	count := 0
+	for _, v := range room.UsersPointsInputs {
+		if v[key] {
+			count++
+		}
+		if count >= nbplayers/2 {
+			return true
+		}
+	}
+	return false
 }
 
 func CleanStr(str string) string {

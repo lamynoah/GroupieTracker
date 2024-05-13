@@ -22,8 +22,11 @@ func DeleteRooms() error {
 		return err
 	}
 	defer db.Close()
-	deleteQuery := "DELETE FROM ROOMS"
-	_, err = db.Exec(deleteQuery)
+	_, err = db.Exec("DELETE FROM ROOMS")
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("DELETE FROM sqlite_sequence WHERE name=ROOMS")
 	if err != nil {
 		return err
 	}

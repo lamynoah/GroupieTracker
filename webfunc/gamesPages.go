@@ -12,7 +12,7 @@ import (
 )
 
 func BlindTestPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/blindtest.html", "./template/websocket.html")
+	temp, _ := template.ParseFiles("./pages/blindTest.html", "./template/websocket.html")
 	temp.Execute(w, nil)
 }
 
@@ -59,9 +59,13 @@ func PtitbacPage(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func SettingDeaftest(w http.ResponseWriter, r *http.Request) {
+	temp, _ := template.ParseFiles("./pages/settingDeafTest.html")
+	temp.Execute(w, nil)
+}
+
 func SettingBacPage(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/settingPagesPtitBac.html")
-
 	temp.Execute(w, nil)
 }
 
@@ -70,13 +74,45 @@ func SettingBlindtest(w http.ResponseWriter, r *http.Request) {
 	temp.Execute(w, nil)
 }
 
-func Loading(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/loading.html", "./template/websocket.html")
+func LoadingPageDeafTest(w http.ResponseWriter, r *http.Request) {
+	temp, _ := template.ParseFiles("./pages/loadingDeafTest.html", "./template/websocket.html")
 	r.ParseForm()
-	roomId, err := strconv.Atoi(r.FormValue("room"))
+	roomId := getRoomIdFromPage(r)
+	userId := getUserIdFromPage(r)
+	db, err := sql.Open("sqlite3", BDDPath)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
+	query := "SELECT max_player FROM ROOMS WHERE id = ?"
+	row := db.QueryRow(query, roomId)
+
+	var maxPlayer int
+	err = row.Scan(&maxPlayer)
+	if err != nil {
+		http.Redirect(w, r, "/lobbyDeafTest", http.StatusNotFound)
+		return
+	}
+
+	if lenOfMap(&arrayRoomDeaftest[roomId].DeafTestConns) > maxPlayer || arrayRoomDeaftest[roomId].IsStarted {
+		http.Redirect(w, r, "/lobbyDeafTest", http.StatusFound)
+		return
+	}
+
+	room, err := bdd.QueryRoom(roomId)
+	if err != nil {
+		log.Println(err)
+	}
+
+	bdd.InsertRoomsUser(roomId, userId, 0)
+
+	temp.Execute(w, room.Created_by == userId)
+}
+
+func Loading(w http.ResponseWriter, r *http.Request) {
+	temp, _ := template.ParseFiles("./pages/loading.html", "./template/websocket.html")
+	r.ParseForm()
+	roomId := getRoomIdFromPage(r)
 	userId := getUserIdFromPage(r)
 	db, err := sql.Open("sqlite3", BDDPath)
 	if err != nil {

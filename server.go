@@ -21,22 +21,35 @@ func main() {
 	http.HandleFunc("/createUser", webfunc.CreateUser)
 	http.HandleFunc("/login", webfunc.Login)
 	http.HandleFunc("/loginUser", webfunc.Connect)
-	http.HandleFunc("/deaftest", webfunc.DeafTestPage)
+	http.HandleFunc("/deafTest", webfunc.DeafTestPage)
 	http.HandleFunc("/ptitbac", webfunc.PtitbacPage)
 	http.HandleFunc("/getTrackID", webfunc.GetTrackID)
 	// games routes
 	http.HandleFunc("/selectGame", webfunc.Select)
 	http.HandleFunc("/blindtest", webfunc.BlindTestPage)
+	http.HandleFunc("/blindTest", webfunc.BlindTestPage)
+	http.HandleFunc("/deafTest", webfunc.DeafTestPage)
+	http.HandleFunc("/ptitBac", webfunc.PtitbacPage)
+	// settings Pages
 	http.HandleFunc("/settingBacPage", webfunc.SettingBacPage)
+	http.HandleFunc("/settingDeaftest", webfunc.SettingDeaftest)
+	// lobby Pages
 	http.HandleFunc("/lobby", webfunc.Lobby)
 	http.HandleFunc("/lobbyBlindtest", webfunc.LobbyBlindtest)
+	http.HandleFunc("/lobbyDeafTest", webfunc.LobbyDeaftest)
+	// loading Pages
 	http.HandleFunc("/loadingPage", webfunc.Loading)
 	http.HandleFunc("/loadingPageBlindtest", webfunc.LoadingPageBlindtest)
+	http.HandleFunc("/loadingPageDeafTest", webfunc.LoadingPageDeafTest)
+	// create Rooms Routes
 	http.HandleFunc("/createRoom", webfunc.CreateRoom)
 	http.HandleFunc("/settingBlindtest", webfunc.SettingBlindtest)
 	http.HandleFunc("/createRoomBlindtest", webfunc.CreateRoomBlindtest)
+	http.HandleFunc("/createRoomDeafTest", webfunc.CreateRoomDeafTest)
+
 	http.HandleFunc("/score", webfunc.Score)
 	// http.HandleFunc("/result", webfunc.Result)
+
 	// websockets routes
 	http.HandleFunc("/ws", webfunc.WebSocket)
 	http.HandleFunc("/ws/blindtest", webfunc.WebSocket)
@@ -44,7 +57,9 @@ func main() {
 	http.HandleFunc("/ws/ptitBac", webfunc.WebSocket)
 	http.HandleFunc("/ws/loading", webfunc.WebSocket)
 	http.HandleFunc("/ws/loadingBlindtest", webfunc.WebSocket)
+	http.HandleFunc("/ws/loadingDeafTest", webfunc.WebSocket)
 	http.HandleFunc("/ws/result", webfunc.WebSocket)
+
 	//conn, _ := net.Dial("tcp", "google.com:http")
 	//fmt.Println(conn.LocalAddr())
 

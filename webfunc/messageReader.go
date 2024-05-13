@@ -20,20 +20,47 @@ func reader(conn *websocket.Conn, game string) {
 	case "blindTest":
 		fmt.Println("game:", game)
 	case "deafTest":
-		fmt.Println("game:", game)
+		jsonMsg := &struct {
+			Id        int    `json:"id_room"`
+			UserId    int    `json:"id_user"`
+			Done      bool   `json:"Done"`
+			Input     string `json:"input"`
+			NextRound bool   `json:"NextRound"`
+			// Inputs    map[string]bool `json:"inputs"`
+		}{}
 		for {
-			messageType, p, err := conn.ReadMessage()
+			err := conn.ReadJSON(jsonMsg)
 			if err != nil {
 				log.Println(err)
-				return
+				break
+			}
+			fmt.Println("msg :", jsonMsg)
+			room := arrayRoomDeaftest[jsonMsg.Id]
+			room.DeafTestConns.Store(conn, &sync.Mutex{})
+
+			// fmt.Println("room connections :", room.PtitBacConns)
+			defaultHandler := conn.CloseHandler()
+			conn.SetCloseHandler(func(code int, text string) error {
+				room.DeafTestConns.Delete(conn)
+				return defaultHandler(code, text)
+			})
+			fmt.Println("done conditions :", jsonMsg.Done, room.IsDone)
+			if jsonMsg.Done && !room.IsDone {
+				fmt.Println("someone finished")
+				room.IsStarted = true
+				room.IsDone = true
+				room.SendToRoom("end round")
+			}
+			switch {
+			case jsonMsg.NextRound:
+				room.NextRound()
+			case len(jsonMsg.Input) > 0:
+				room.UsersInputs.Store(jsonMsg.UserId, jsonMsg.Input)
+
+				// case len(jsonMsg.Inputs) > 0:
+				// 	fmt.Println("inputs :", jsonMsg.Inputs)
 			}
 
-			log.Println(string(p))
-
-			if err := conn.WriteMessage(messageType, p); err != nil {
-				log.Println(err)
-				return
-			}
 		}
 	case "ptitBac":
 		jsonMsg := &struct {
@@ -100,7 +127,7 @@ func reader(conn *websocket.Conn, game string) {
 			err := conn.ReadJSON(jsonMsg)
 			if err != nil {
 				log.Println(err)
-				return
+				break
 			}
 			room := arrayRoom[jsonMsg.Id]
 			room.PtitBacConns.Store(conn, &sync.Mutex{})

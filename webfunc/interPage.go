@@ -40,6 +40,19 @@ func LobbyBlindtest(w http.ResponseWriter, r *http.Request) {
 	temp.Execute(w, arrayRommBlindtest)
 }
 
+func LobbyDeaftest(w http.ResponseWriter, r *http.Request) {
+	temp, _ := template.ParseFiles("./pages/lobbyDeaftest.html")
+	arrayNamedRoom := map[string]*DeafTestData{}
+	for i, v := range arrayRoomDeaftest {
+		row, err := bdd.QueryRoom(i)
+		if err != nil {
+			log.Println(err)
+		}
+		arrayNamedRoom[row.Name] = v
+	}
+	temp.Execute(w, arrayNamedRoom)
+}
+
 func HomePage(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/home.html", "./template/websocket.html")
 	temp.Execute(w, nil)
