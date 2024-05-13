@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"html/template"
 	"log"
-	"math/rand"
 	"net/http"
 	"strconv"
 
@@ -13,30 +12,8 @@ import (
 )
 
 func BlindTestPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/blindtest.html", "./template/websocket.html")
+	temp, _ := template.ParseFiles("./pages/blindTest.html", "./template/websocket.html")
 	temp.Execute(w, nil)
-}
-
-type Music struct {
-	Title  string
-	Lyrics string
-}
-
-var musics = []Music{{"a", "aaa"}, {"b", "bbb"}, {"c", "ccc"}}
-
-func (m Music) getLyrics() string { return m.Lyrics }
-
-func (m Music) Check(formValue string) bool {
-	if formValue == m.Title {
-		return true
-	}
-	return false
-}
-
-func DeafTestPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/deaftest.html", "./template/websocket.html")
-	randomMusic := musics[(rand.Int() % len(musics))]
-	temp.Execute(w, randomMusic)
 }
 
 // MARK: PtitbacPage
@@ -78,11 +55,7 @@ func PtitbacPage(w http.ResponseWriter, r *http.Request) {
 
 func SettingBacPage(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/settingPagesPtitBac.html")
-	temp.Execute(w, nil)
-}
 
-func SettingDeaftest(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/settingDeaftest.html")
 	temp.Execute(w, nil)
 }
 
@@ -128,39 +101,4 @@ func lenOfMap(v *syncmap.Map) int {
 		return true
 	})
 	return i
-}
-
-func LoadingPageDeafTest(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/loadingPageDeaftest.html", "./template/websocket.html")
-	r.ParseForm()
-	roomId, err := strconv.Atoi(r.FormValue("room"))
-	userId := getUserIdFromPage(r)
-	db, err := sql.Open("sqlite3", BDDPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-	query := "SELECT max_player FROM ROOMS WHERE id = ?"
-	row := db.QueryRow(query, roomId)
-
-	var maxPlayer int
-	err = row.Scan(&maxPlayer)
-	if err != nil {
-		http.Redirect(w, r, "/lobbyDeaftest", http.StatusNotFound)
-		return
-	}
-
-	if lenOfMap(&arrayRoomDeaftest[roomId].DeafTestConns) > maxPlayer || arrayRoomDeaftest[roomId].IsStarted {
-		http.Redirect(w, r, "/lobbyDeaftest", http.StatusFound)
-		return
-	}
-
-	room, err := bdd.QueryRoom(roomId)
-	if err != nil {
-		log.Println(err)
-	}
-
-	bdd.InsertRoomsUser(roomId, userId, 0)
-
-	temp.Execute(w, room.Created_by == userId)
 }

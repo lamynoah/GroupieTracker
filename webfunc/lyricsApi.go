@@ -15,13 +15,10 @@ import (
 type Song struct {
 	Author string
 	Title  string
+	Lyrics string
 }
 
-type fetchResponse struct {
-	Lyrics string `json:"lyrics"`
-}
-
-func GetLyrics() (string, error) {
+func GetLyrics() Song {
 	songs := []Song{}
 	content, err := os.ReadFile("./static/json/songs.json")
 	if err != nil {
@@ -31,26 +28,24 @@ func GetLyrics() (string, error) {
 	if err != nil {
 		log.Fatal("Error during Unmarshal(): ", err)
 	}
-	// fmt.Println(songs)
 
 	index := rand.Intn(len(songs))
 	selectedSong := songs[index]
 
-	// trackTitleGTS = selectedSong.Title
-
 	fmt.Println("Autheur: ", selectedSong.Author, " Nom de la musique: ", selectedSong.Title)
-	// https://api.lyrics.ovh/v1/LCD Soundsystem/LCD Soundsystem
-	url := fmt.Sprintf("https://api.lyrics.ovh/v1/"+selectedSong.Author+"/"+selectedSong.Title)
+	url := fmt.Sprintf("https://api.lyrics.ovh/v1/" + selectedSong.Author + "/" + selectedSong.Title)
 	response, err := http.Get(url)
 	if err != nil {
-		return "", err
+		return Song{}
 	}
 	defer response.Body.Close()
 
-	var fetchResponse fetchResponse
-	if err := json.NewDecoder(response.Body).Decode(&fetchResponse); err != nil {
-		return "", err
+	var fetchResponse struct {
+		Lyrics string `json:"lyrics"`
 	}
-
-	return fetchResponse.Lyrics, nil
+	if err := json.NewDecoder(response.Body).Decode(&fetchResponse); err != nil {
+		return Song{}
+	}
+	selectedSong.Lyrics = fetchResponse.Lyrics
+	return selectedSong
 }
