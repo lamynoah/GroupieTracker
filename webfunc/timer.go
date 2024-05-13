@@ -51,3 +51,43 @@ func (room *PtitBacData) timerDecrease(round int) bool {
 	}
 	return true
 }
+func (room *BlindTestData) NextRound() {
+	if room.CurrentRound < room.MaxRounds {
+		room.IsDone = false
+		
+		room.CurrentRound++
+		room.CurrentTime = room.Timer
+		room.SendToRoom(struct {
+			// Letter string `json:"letter"`
+			Time   int    `json:"time"`
+		}{ room.Timer})
+		go room.StartTimer()
+	} else if room.CurrentRound == room.MaxRounds{
+		room.SendToRoom("end game")
+	}
+}
+
+// MARK: Timer
+
+func (room *BlindTestData) StartTimer() {
+	ended := room.timerDecrease(room.CurrentRound)
+	fmt.Println("timer ended because of someone :", !ended)
+	// time.Sleep(time.Duration(room.Timer) * time.Second)
+	if !room.IsDone && ended {
+		room.SendToRoom("end round")
+		log.Println("round done because of someone or timeout")
+		room.IsDone = true
+	}
+}
+
+func (room *BlindTestData) timerDecrease(round int) bool {
+	for room.CurrentTime != 0 {
+		time.Sleep(time.Second)
+		room.CurrentTime--
+		if room.IsDone || (round < room.CurrentRound) {
+			fmt.Println("timer stopped because of someone")
+			return false
+		}
+	}
+	return true
+}

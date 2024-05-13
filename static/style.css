@@ -2,3 +2,7 @@ body {
     background-color: black;
     color: aliceblue;
 }
+
+#spotifyPlayer {
+    filter: blur(0px);
+}

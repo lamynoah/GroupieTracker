@@ -128,6 +128,44 @@ func reader(conn *websocket.Conn, game string) {
 				fmt.Println("non :", jsonMsg.Start, r.Created_by == jsonMsg.UserId)
 			}
 		}
+	case "loadingBlindtest":
+		jsonMsg := &struct {
+			Id     int  `json:"id_room"`
+			UserId int  `json:"id_user"`
+			Start  bool `json:"start"`
+		}{}
+		for {
+			err := conn.ReadJSON(jsonMsg)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			room := arrayRommBlindtest[jsonMsg.Id]
+			room.BlindTestConns.Store(conn, &sync.Mutex{})
+			users, err := bdd.QueryRoomUsers(jsonMsg.Id)
+			if err != nil {
+				log.Println(err)
+			}
+			room.SendToRoom(&users)
+			defaultHandler := conn.CloseHandler()
+			conn.SetCloseHandler(func(code int, text string) error {
+				room.BlindTestConns.Delete(conn)
+				return defaultHandler(code, text)
+			})
+
+			r, err := bdd.QueryRoom(jsonMsg.Id)
+			if err != nil {
+				log.Println(err)
+			}
+			fmt.Println(jsonMsg)
+			if jsonMsg.Start && r.Created_by == jsonMsg.UserId {
+				room.IsStarted = true
+				go room.StartTimer()
+				room.SendToRoom("start game")
+			} else {
+				fmt.Println("non :", jsonMsg.Start, r.Created_by == jsonMsg.UserId)
+			}
+		}
 	default:
 		fmt.Println("Unknown game:", game)
 	}

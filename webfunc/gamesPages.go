@@ -12,7 +12,7 @@ import (
 )
 
 func BlindTestPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/blindTest.html", "./template/websocket.html")
+	temp, _ := template.ParseFiles("./pages/blindtest.html", "./template/websocket.html")
 	temp.Execute(w, nil)
 }
 
@@ -65,6 +65,11 @@ func SettingBacPage(w http.ResponseWriter, r *http.Request) {
 	temp.Execute(w, nil)
 }
 
+func SettingBlindtest(w http.ResponseWriter, r *http.Request) {
+	temp, _ := template.ParseFiles("./pages/settingBlindtest.html")
+	temp.Execute(w, nil)
+}
+
 func Loading(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/loading.html", "./template/websocket.html")
 	r.ParseForm()
@@ -90,6 +95,44 @@ func Loading(w http.ResponseWriter, r *http.Request) {
 
 	if lenOfMap(&arrayRoom[roomId].PtitBacConns) > maxPlayer || arrayRoom[roomId].IsStarted {
 		http.Redirect(w, r, "/lobby", http.StatusFound)
+		return
+	}
+
+	room, err := bdd.QueryRoom(roomId)
+	if err != nil {
+		log.Println(err)
+	}
+
+	bdd.InsertRoomsUser(roomId, userId, 0)
+
+	temp.Execute(w, room.Created_by == userId)
+}
+
+func LoadingPageBlindtest(w http.ResponseWriter, r *http.Request) {
+	temp, _ := template.ParseFiles("./pages/loadingPageBlindtest.html", "./template/websocket.html")
+	r.ParseForm()
+	roomId, err := strconv.Atoi(r.FormValue("room"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	userId := getUserIdFromPage(r)
+	db, err := sql.Open("sqlite3", BDDPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+	query := "SELECT max_player FROM ROOMS WHERE id = ?"
+	row := db.QueryRow(query, roomId)
+
+	var maxPlayer int
+	err = row.Scan(&maxPlayer)
+	if err != nil {
+		http.Redirect(w, r, "/lobbyBlindtest", http.StatusNotFound)
+		return
+	}
+
+	if lenOfMap(&arrayRommBlindtest[roomId].BlindTestConns) > maxPlayer || arrayRommBlindtest[roomId].IsStarted {
+		http.Redirect(w, r, "/lobbyBlindtest", http.StatusFound)
 		return
 	}
 
