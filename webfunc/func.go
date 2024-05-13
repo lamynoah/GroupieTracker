@@ -184,12 +184,6 @@ func (room *PtitBacData) CalcPoints() {
 	// db.Close()
 }
 
-func CleanStr(str string) string {
-	regex := regexp.MustCompile(`\W+`)
-	cleanedStr := regex.ReplaceAllString(str, "")
-	return cleanedStr
-}
-
 // Recup la cate  puis
 func (room *PtitBacData) IsRight(key string) bool {
 	nbplayers := lenOfMap(&room.PtitBacConns)
@@ -203,59 +197,6 @@ func (room *PtitBacData) IsRight(key string) bool {
 		}
 	}
 	return false
-}
-
-func (room *PtitBacData) CalcPoints() {
-	type Inputed struct {
-		Username string `json:"username"`
-		Category string `json:"category"`
-		Input    string `json:"input"`
-	}
-	type UserCat struct {
-		UserId   int    `json:"username"`
-		Category string `json:"category"`
-	}
-	rightKeys := []string{}
-	for i := range room.UsersPointsInputs[0] {
-		if room.IsRight(i) {
-			rightKeys = append(rightKeys, i)
-		}
-	}
-
-	inputs := map[string][]UserCat{}
-
-	for _, v := range rightKeys {
-		temp := Inputed{}
-		err := json.Unmarshal([]byte(v), &temp)
-		if err != nil {
-			log.Println("CalcPoints(for(Unmarshal)):", err)
-		} else {
-			fmt.Println("unmarshal result:", temp)
-		}
-
-		UserId, err := connect.QueryUserId(temp.Username)
-		if err != nil {
-			log.Println("CalcPoints(for(QueryUserId)):", err)
-		}
-		tretedName := (ss.ToLower(temp.Input))
-		inputs[temp.Input] = append(inputs[tretedName], UserCat{UserId, temp.Category})
-	}
-
-	// db, err := sql.Open("sqlite3", BDDPath)
-	// if err != nil {
-	// 	log.Println("CalcPoints(sql.Open):", err)
-	// }
-
-	for _, v := range inputs {
-		if len(v) > 1 {
-			for _, v2 := range v {
-				AddScoreToPlayer(room.getId(), v2.UserId, 1)
-			}
-		} else {
-			AddScoreToPlayer(room.getId(), v[0].UserId, 2)
-		}
-	}
-	// db.Close()
 }
 
 func CleanStr(str string) string {

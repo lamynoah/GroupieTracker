@@ -120,14 +120,6 @@ func CreateRoomDeafTest(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/loadingPageDeafTest?room="+fmt.Sprint(roomID), http.StatusFound)
 }
 
-func parseValuesFromPage(r *http.Request, names []string) []string {
-	ans := []string{}
-	for _, v := range names {
-		ans = append(ans, r.FormValue(v))
-	}
-	return ans
-}
-
 func parseIntValuesFromPage(r *http.Request, names []string) []int {
 	ans := []int{}
 	for _, v := range names {
