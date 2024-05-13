@@ -6,7 +6,7 @@ import (
 )
 
 func GetRoomID(roomName string) (int, error) {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", "./bdd/table.db")
 	if err != nil {
 		return 0, err
 	}
@@ -31,7 +31,7 @@ func GetRoomIDFromName(rommName string, db *sql.DB) (int, error) {
 }
 
 func QueryRoom(id int) (games.ROOM, error) {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", "./bdd/table.db")
 	if err != nil {
 		return games.ROOM{}, err
 	}
@@ -44,4 +44,33 @@ func QueryRoom(id int) (games.ROOM, error) {
 		return room, err
 	}
 	return room, nil
+}
+
+func QueryRoomUsers(roomId int) ([]string, error) {
+	db, err := sql.Open("sqlite3", "./bdd/table.db")
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	users := []string{}
+	// for
+	query := "SELECT u.username FROM Users AS u INNER JOIN ROOM_USERS AS ru ON u.UserID = ru.id_user WHERE id_room = ?"
+	rows, err := db.Query(query, roomId)
+	if err != nil {
+		return users, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var user string
+		err := rows.Scan(&user)
+		if err != nil {
+			return users, err
+		}
+		users = append(users, user)
+	}
+	if err = rows.Err(); err != nil {
+		return users, err
+	}
+	return users, nil
 }

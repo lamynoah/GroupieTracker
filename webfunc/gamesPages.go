@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+
+	"golang.org/x/sync/syncmap"
 )
 
 func BlindTestPage(w http.ResponseWriter, r *http.Request) {
@@ -67,7 +69,7 @@ func Loading(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	roomId, err := strconv.Atoi(r.FormValue("room"))
 	userId := getUserIdFromPage(r)
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", BDDPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -81,7 +83,8 @@ func Loading(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/lobby", http.StatusNotFound)
 		return
 	}
-	if len(arrayRoom[roomId].PtitBacConns) > maxPlayer || arrayRoom[roomId].IsStarted {
+
+	if lenOfMap(&arrayRoom[roomId].PtitBacConns) > maxPlayer || arrayRoom[roomId].IsStarted {
 		http.Redirect(w, r, "/lobby", http.StatusFound)
 		return
 	}
@@ -91,5 +94,16 @@ func Loading(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
+	bdd.InsertRoomsUser(roomId, userId, 0)
+
 	temp.Execute(w, room.Created_by == userId)
+}
+
+func lenOfMap(v *syncmap.Map) int {
+	i := 0
+	v.Range(func(key any, v any) bool {
+		i++
+		return true
+	})
+	return i
 }

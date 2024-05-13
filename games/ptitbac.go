@@ -1,11 +1,11 @@
 package games
 
 import (
+	"GT/connect"
+
 	"database/sql"
 	"log"
 	"math/rand"
-
-	"GT/connect"
 )
 
 func GenererLetters() string {
@@ -90,3 +90,30 @@ func ScoreBoardData(room int, db *sql.DB) []ScoreBoard {
 	}
 	return dataScoreBoard
 }
+
+// [id_user, catégorie, input, valeur button] -> {1} on regarde s il = other[1] si c est le cas score +1 sinon +2
+
+type Validation struct {
+	Category string `json:"username"`
+	Input    string `json:"input"`
+	Value    bool   `json:"value"`
+}
+
+// func CompareValue([]Validation) {
+// 	room = arrayInput[0]
+// 	room.UserInputs
+// }
+
+// func AddScore(db *sql.DB, v Validation, RoomId, UserId) error {
+// 	insertQuery,err := db.Prepare("INSERT INTO ROOM_USERS (id_room, id_user, score) VALUES (?,?,?)")
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer insertQuery.Close()
+
+// 	_, err = insertQuery.Exec(v.RoomId,v.UserId, 1)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }

@@ -1,9 +1,11 @@
 package webfunc
 
 import (
+	"GT/bdd"
 	"GT/connect"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 )
 
@@ -14,7 +16,15 @@ func Select(w http.ResponseWriter, r *http.Request) {
 
 func Lobby(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/lobby.html")
-	temp.Execute(w, arrayRoom)
+	arrayNamedRoom := map[string]*PtitBacData{}
+	for i, v := range arrayRoom {
+		row, err := bdd.QueryRoom(i)
+		if err != nil {
+			log.Println(err)
+		}
+		arrayNamedRoom[row.Name] = v
+	}
+	temp.Execute(w, arrayNamedRoom)
 }
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
@@ -37,4 +47,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(connect.Islogin(r))
 	temp.Execute(w, dataError)
 	dataError.Error = ""
+}
+
+func Score(w http.ResponseWriter, r *http.Request) {
+	temp, _ := template.ParseFiles("./pages/score.html", "./template/scoreboard.html")
+	temp.Execute(w, nil)
 }

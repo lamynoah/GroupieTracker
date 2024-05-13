@@ -11,6 +11,8 @@ import (
 	"strconv"
 )
 
+var arrayRoom = map[int]*PtitBacData{}
+
 // MARK: CreateRoom
 func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
@@ -26,7 +28,7 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	name := r.FormValue("name")
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", BDDPath)
 	room := games.ROOM{
 		Created_by:  UserId,
 		Max_players: max_player,
@@ -61,11 +63,9 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	//MARK: Init Room
 	arrayRoom[roomID] = &PtitBacData{
 		RoomLink:     "?room=" + fmt.Sprint(roomID),
-		PtitBacConns: ConnSet{},
 		Letter:       letter,
 		ArrayLetter:  letters,
 		IsStarted:    false,
-		UsersInputs:  make(map[string][]string),
 		Timer:        timer,
 		MaxRound:     maxRound,
 		CurrentRound: 1,

@@ -48,7 +48,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func UserNameExist(username string) bool {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", BDDPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -64,7 +64,7 @@ func UserNameExist(username string) bool {
 }
 
 func Connect(w http.ResponseWriter, r *http.Request) {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", BDDPath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

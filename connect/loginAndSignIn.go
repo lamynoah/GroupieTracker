@@ -9,6 +9,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const BDDPath = "./bdd/table.db"
+
 func UserCookies(w http.ResponseWriter, id int) {
 	cookie := http.Cookie{
 		Name:  "Id",
@@ -92,7 +94,7 @@ func QueryPasswordUsers(db *sql.DB) ([]string, error) {
 }
 
 func QueryUserId(usernameOrEmail string) (int, error) {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", BDDPath)
 	if err != nil {
 		return 0, err
 	}
@@ -111,7 +113,7 @@ func QueryUserId(usernameOrEmail string) (int, error) {
 }
 
 func QueryUserName(userId int) (string, error) {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", BDDPath)
 	if err != nil {
 		return "", err
 	}

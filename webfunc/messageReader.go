@@ -1,16 +1,18 @@
 package webfunc
 
 import (
-	"GT/connect"
 	"GT/bdd"
+	"GT/connect"
+	"GT/games"
 	"fmt"
 	"log"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
 
 func reader(conn *websocket.Conn, game string) {
-	ptitBacConns.Add(conn)
+	// ptitBacConns.Add(conn)
 	if len(game) > 4 {
 		game = game[4:]
 	}
@@ -35,11 +37,12 @@ func reader(conn *websocket.Conn, game string) {
 		}
 	case "ptitBac":
 		jsonMsg := &struct {
-			Id        int      `json:"id_room"`
-			UserId    int      `json:"id_user"`
-			Done      bool     `json:"Done"`
-			Data      []string `json:"data"`
-			NextRound bool     `json:"NextRound"`
+			Id        int                         `json:"id_room"`
+			UserId    int                         `json:"id_user"`
+			Done      bool                        `json:"Done"`
+			Data      []string                    `json:"data"`
+			NextRound bool                        `json:"NextRound"`
+			Inputs    map[string][]games.Validation `json:"Inputs"`
 		}{}
 		for {
 			err := conn.ReadJSON(jsonMsg)
@@ -47,9 +50,9 @@ func reader(conn *websocket.Conn, game string) {
 				log.Println(err)
 				return
 			}
-			fmt.Println(jsonMsg)
+			fmt.Println("inputs :",jsonMsg.Inputs)
 			room := arrayRoom[jsonMsg.Id]
-			room.PtitBacConns.Add(conn)
+			room.PtitBacConns.Store(conn, &sync.Mutex{})
 
 			// fmt.Println("room connections :", room.PtitBacConns)
 			defaultHandler := conn.CloseHandler()
@@ -57,40 +60,52 @@ func reader(conn *websocket.Conn, game string) {
 				room.PtitBacConns.Delete(conn)
 				return defaultHandler(code, text)
 			})
+			fmt.Println("done conditions :", jsonMsg.Done, room.IsDone)
 			if jsonMsg.Done && !room.IsDone {
-				fmt.Println(jsonMsg)
+				fmt.Println("someone finished")
 				room.IsStarted = true
 				room.IsDone = true
 				room.SendToRoom("end round")
-			}
-			if len(jsonMsg.Data) > 0 {
+			} else if jsonMsg.NextRound {
+				room.NextRound()
+			} else if len(jsonMsg.Data) > 0 {
 				username, err := connect.QueryUserName(jsonMsg.UserId)
 				if err != nil {
 					log.Println("useridQuery : ", err)
 				}
-				room.UsersInputs[username] = jsonMsg.Data
-				room.SendToRoom(map[string][]string{username: jsonMsg.Data})
-				fmt.Println(room.UsersInputs)
-			}
-			if jsonMsg.NextRound {
-				room.NextRound()
+				room.UsersInputs.Store(username, jsonMsg.Data)
+				ui := map[string][]string{}
+				room.UsersInputs.Range(func(key, value any) bool {
+					ui[key.(string)] = value.([]string)
+					return true
+				})
+				room.SendToRoom(ui)
+				fmt.Println(&room.UsersInputs)
+			} else if len(jsonMsg.Inputs) > 0 {
+				fmt.Println("inputs :", jsonMsg.Inputs)
+				room.UsersPointsInputs = append(room.UsersPointsInputs, jsonMsg.Inputs)
 			}
 		}
 	case "loading":
 		jsonMsg := &struct {
-			Id     int
-			UserId int `json:"id_user"`
-			Start  bool
+			Id     int  `json:"id_room"`
+			UserId int  `json:"id_user"`
+			Start  bool `json:"start"`
 		}{}
-		fmt.Println("all connections :", ptitBacConns)
 		for {
 			err := conn.ReadJSON(jsonMsg)
 			if err != nil {
+				fmt.Println("here")
 				log.Println(err)
 				return
 			}
 			room := arrayRoom[jsonMsg.Id]
-			room.PtitBacConns.Add(conn)
+			room.PtitBacConns.Store(conn, &sync.Mutex{})
+			users, err := bdd.QueryRoomUsers(jsonMsg.Id)
+			if err != nil {
+				log.Println(err)
+			}
+			room.SendToRoom(&users)
 			defaultHandler := conn.CloseHandler()
 			conn.SetCloseHandler(func(code int, text string) error {
 				room.PtitBacConns.Delete(conn)
@@ -101,7 +116,7 @@ func reader(conn *websocket.Conn, game string) {
 			if err != nil {
 				log.Println(err)
 			}
-
+			fmt.Println(jsonMsg)
 			if jsonMsg.Start && r.Created_by == jsonMsg.UserId {
 				room.IsStarted = true
 				go room.StartTimer()

@@ -1,10 +1,13 @@
 package webfunc
 
 import (
+	"GT/games"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/gorilla/websocket"
+	"golang.org/x/sync/syncmap"
 )
 
 var upgrader = websocket.Upgrader{
@@ -12,33 +15,36 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-var ptitBacConns = ConnSet{}
+const BDDPath = "./bdd/table.db"
+
+// var ptitBacConns = ConnSet{}
 
 type PtitBacData struct {
-	// RoomName     string
-	RoomLink     string
-	PtitBacConns ConnSet
-	Letter       string
-	ArrayLetter  []string
-	IsStarted    bool
-	UsersInputs  map[string][]string
-	Timer        int
-	MaxRound     int
-	CurrentRound int
-	Categories   []string
-	CurrentTime  int
-	IsDone       bool
+	RoomLink     		string
+	PtitBacConns 		syncmap.Map
+	Letter       		string
+	ArrayLetter  		[]string
+	IsStarted    		bool
+	UsersInputs  		syncmap.Map
+	Timer        		int
+	MaxRound     		int
+	CurrentRound 		int
+	Categories   		[]string
+	CurrentTime  		int
+	IsDone       		bool
+	UsersPointsInputs  	[]map[string][]games.Validation
 }
 
-var arrayRoom = map[int]*PtitBacData{}
-
 func (room *PtitBacData) SendToRoom(msg any) {
-	for v := range room.PtitBacConns {
-		if err := v.WriteJSON(msg); err != nil {
+	room.PtitBacConns.Range(func (key any, v any) bool {
+		v.(*sync.Mutex).Lock()
+		defer v.(*sync.Mutex).Unlock()
+		if err := key.(*websocket.Conn).WriteJSON(msg); err != nil {
 			log.Println(err)
-			return
+			return false
 		}
-	}
+		return true
+	})
 }
 
 func WebSocket(w http.ResponseWriter, r *http.Request) {

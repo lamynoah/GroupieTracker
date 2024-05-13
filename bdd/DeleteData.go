@@ -3,7 +3,7 @@ package bdd
 import "database/sql"
 
 func DeleteRoomsUser() error {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", "./bdd/table.db")
 	if err != nil {
 		return err
 	}

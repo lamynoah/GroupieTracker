@@ -29,6 +29,7 @@ func main() {
 	http.HandleFunc("/lobby", webfunc.Lobby)
 	http.HandleFunc("/loadingPage", webfunc.Loading)
 	http.HandleFunc("/createRoom", webfunc.CreateRoom)
+	http.HandleFunc("/score", webfunc.Score)
 	// http.HandleFunc("/result", webfunc.Result)
 	// websockets routes
 	http.HandleFunc("/ws", webfunc.WebSocket)

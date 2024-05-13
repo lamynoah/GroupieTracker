@@ -52,5 +52,8 @@
         }
         return "";
     }
+    function send(JsonMsg) {
+        socket.send(JSON.stringify(JsonMsg))
+    }
 </script>
 {{end}}

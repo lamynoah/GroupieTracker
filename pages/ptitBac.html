@@ -15,13 +15,11 @@
         <h1> Lettre : <span id="letter">{{.Letter}}</span></h1>
         <div id="timer">{{.Time}}s</div>
         <div> Nombre de round : <span id="round">{{ .CurrentRound}}</span> / {{.MaxRound}}</div>
-        <form>
-            {{range .Categories}}
-            <label for="{{.}}">{{.}}:</label>
-            <input placeholder="{{$l}}..." type="text" name="{{.}}" id="{{.}}" autocomplete="off" required /><br>
-            {{end}}
-            <input id="send" type="submit" value="FINISH" />
-        </form>
+        {{range .Categories}}
+        <label for="{{.}}">{{.}}:</label>
+        <input placeholder="{{$l}}..." type="text" name="{{.}}" id="{{.}}" autocomplete="off" required /><br>
+        {{end}}
+        <input id="send" type="submit" value="FINISH" />
     </div>
     <div id="result" style="display: none;">
         <h1>Resultat</h1>
@@ -30,97 +28,170 @@
         <ul class="user-result"></ul>
         {{end}}
         {{if .IsCreator}}
-        <button onclick="socket.send(JSON.stringify({ Id:getRoomId(), NextRound: true, id_user : Number.parseInt(getCookie('Id')) }))" >Round Suivant</button>
+        <button onclick="send(new JsonMsg(getRoomId(), Number.parseInt(getCookie('Id')), false, [], true))">Round
+            Suivant</button>
         {{end}}
     </div>
     {{template "socket" "ptitBac"}}
     <script>
+        class JsonMsg {
+            constructor(id_room, id_user, Done, data, NextRound, Inputs) {
+                this.id_room = id_room
+                this.id_user = id_user
+                this.Done = Done
+                this.data = data
+                this.NextRound = NextRound
+                this.Inputs = Inputs
+            }
+        }
         let time = Number.parseInt("{{.Time}}")
         let round = Number.parseInt("{{.CurrentRound}}")
+        let inputs = Array.from(document.querySelectorAll("input[type='text']"))
 
         const timerDiv = document.querySelector("#timer")
         if (time < 1) { // || JSON.parse("{{.IsDone}}")) {
-            setFinished()
+            toggleDisplay()
         }
-        const inter = setInterval(() => {
-            time--
-            timerDiv.textContent = `${time}s`
-            if (time === 10) timerDiv.style.color = "red"
-            else if (time < 1) clearInterval(inter)
-        }, 1000)
 
-        function setFinished() {
-            document.querySelector("#in-game").style.display = "none"
-            document.querySelector("#result").removeAttribute("style")
+        let inter;
+        function startTimer(startTime = null) {
+            if (inter) clearInterval(inter)
+            if (startTime) time = startTime
+            timerDiv.textContent = `${time}s`
+            inter = setInterval(() => {
+                time--
+                timerDiv.textContent = `${time}s`
+                if (time === 10) timerDiv.style.color = "red"
+                else if (time < 1) {
+                    clearInterval(inter)
+                }
+            }, 1000)
+        }
+        startTimer()
+
+        function toggleDisplay() {
+            const game = document.querySelector("#in-game")
+            const result = document.querySelector("#result")
+            if (game.hasAttribute("style")) {
+                game.removeAttribute("style")
+                result.style.display = "none"
+            } else {
+                game.style.display = "none"
+                result.removeAttribute("style")
+            }
         }
 
         socket.onopen = () => {
-            console.log(JSON.stringify({ id_room: getRoomId(), Done: false }))
-            socket.send(JSON.stringify({ id_room: getRoomId(), Done: false }))
+            const data = new JsonMsg(getRoomId(), 0, false, [], false)
+            console.log(data)
+            send(data)
         }
         socket.onmessage = msg => {
+            class Validation {
+                constructor(username, input, value) {
+                    this.username = username
+                    this.input = input
+                    this.value = value
+                }
+            }
             console.log("recieved :", msg.data)
             let obj = JSON.parse(msg.data)
             // obj = {letter: "L"}
             // "{letter : " + room.Letter + " }"
-            // "Timer expired!"
+            // "end round"
             // "end round"
             // map[username]inputs
             if (obj.letter) {
+                //send Inputs
+                send(getInputs())
+
+                // console.log("change round the new letter is :", obj.letter)
+                // console.log("change round the new time is :", obj.time)
                 const newLetter = document.getElementById("letter")
                 newLetter.textContent = obj.letter
-                Array.from(document.querySelector("input[type='text']")).forEach(e => {
+                inputs.forEach(e => {
+                    e.value = ""
                     e.placeholder = obj.letter + "..."
                 })
+                startTimer(obj.time)
+                toggleDisplay()
+                round++
+                document.getElementById("round").textContent = round
+                Array.from(document.getElementsByTagName("li")).forEach(e => e.remove())
                 // lettere : 1 dans mon go j 'ai ma lettre 2 , et je veux remplacer ma lettre 1 par la 2 '
             } else if (typeof obj === "object") {
+                Array.from(document.getElementsByTagName("li")).forEach(e => e.remove())
                 const divs = document.getElementsByClassName("user-result")
                 const map = new Map(Object.entries(obj))
-                map.forEach((value, key) => {
-                    console.log(`${key}: ${value}`)
-                    console.log("type of value =", typeof value)
-                    value.forEach((v, i) => {
-                        const li = document.createElement("li")
-                        li.textContent = `${key}: ${v}`
-                        const btnVerif = document.createElement("button")
-                        btnVerif.classList.toggle("true")
-                        btnVerif.onclick = function () {
-                            const category = key;
-                            const value = v;
-                            if (btnVerif.classList.contains("true")) {
-                                btnVerif.classList.toggle("true")
-                                btnVerif.classList.toggle("false")
-                            } else {
-                                btnVerif.classList.toggle("false")
-                                btnVerif.classList.toggle("true")
-                            }
+                map.forEach((value, key) => value.forEach((v, i) => {
+                    const li = document.createElement("li")
+                    li.textContent = `${key}: ${v}`
+                    const btnVerif = document.createElement("button")
+                    btnVerif.classList.toggle("true")
+                    btnVerif.onclick = function () {
+                        const category = key;
+                        const value = v;
+                        if (btnVerif.classList.contains("true")) {
+                            btnVerif.classList.toggle("true")
+                            btnVerif.classList.toggle("false")
+                        } else {
+                            btnVerif.classList.toggle("false")
+                            btnVerif.classList.toggle("true")
                         }
+                    }
 
-                        li.appendChild(btnVerif)
-                        divs[i].append(li)
-                    })
-                })
+                    li.appendChild(btnVerif)
+                    divs[i].append(li)
+                }))
             }
             switch (obj) {
-                case "Timer expired!":
                 case "end round":
-                    done();
-                    setFinished()
+                    if (inter) clearInterval(inter)
+                    toggleDisplay()
                     const arr = Array.from(document.querySelectorAll("input[type='text']")).map(e => e.value)
                     console.log(arr)
-                    socket.send(JSON.stringify({ id_room: getRoomId(), Done: false, data: arr, id_user: Number.parseInt(getCookie("Id")) }))
+                    send(new JsonMsg(getRoomId(), Number.parseInt(getCookie("Id")), false, arr, false))
                     break;
             }
         }
-        document.querySelector("form").addEventListener("submit", e => {
-            e.preventDefault()
-            done()
-        })
-        let done = () => {
-            let data = JSON.stringify({ id_room: getRoomId(), Done: true })
-            socket.send(data)
+        document.querySelector("#send").addEventListener("click", e => {
+            const data = new JsonMsg(getRoomId(), 0, true, [], false)
+            send(data)
             console.log("send :", data)
+        })
+
+        // [id_user, catégorie, input, valeur button] -> {1} on regarde s il = other[2] si c est le cas score +1 sinon +2
+        // <h3>Artist</h3>
+        // <ul class="user-result">
+        //      <li>noah12 : wwwwwwww<button class="true"></button></li>
+        // </ul>
+        // <h3>test</h3>
+        // <ul class="user-result"></ul>
+        // <h3>autre</h3>
+        // <ul class="user-result"></ul>
+
+        function getInputs() {
+            let categories = Array.from(document.querySelectorAll("#result > h3")).map(e => e.textContent)
+            let result = {}
+            Array.from(document.querySelectorAll("#result > ul")).forEach((ul, i) => {
+                result[categories[i]] = Array.from(ul.getElementsByTagName("li")).map(li => {
+                    let username = li.textContent.split(":")[0].trim()
+                    let input = li.textContent.split(":")[1].trim()
+                    let value = li.getElementsByTagName("button")[0].classList.contains("true") ? true : false
+                    return new Validation(username, input, value)
+                })
+            })
+            return new Map(Object.entries(result))
         }
+
+        // function sendInputs() {
+        //     let categories = Array.from(document.querySelectorAll("#result > h3")).map(e=>e.textContent)
+        //     Array.from(document.querySelectorAll("#result > ul")).forEach(e=>{
+        //         let e = document.createElement("ul")
+        //         const cat = e.textContent
+        //         Array.from(e.childNodes).forEach()
+        //     })
+        // }
     </script>
 </body>
 
