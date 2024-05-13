@@ -54,7 +54,7 @@ func Score(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 	roomId := getRoomIdFromPage(r)
-	scores, err := bdd.QueryRoomUsersScores(roomId)
+	scores, _, err := bdd.QueryRoomUsersScores(roomId)
 	if err != nil {
 		log.Fatal(err)
 	}

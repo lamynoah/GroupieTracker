@@ -75,19 +75,20 @@ func QueryRoomUsers(roomId int) ([]string, error) {
 	return users, nil
 }
 
-func QueryRoomUsersScores(roomId int) ([]games.ScoreBoard, error) {
+// Return the scores of the players with their username and a map using their UserId to get their scores
+func QueryRoomUsersScores(roomId int) ([]games.ScoreBoard, map[int]int, error) {
 	db, err := sql.Open("sqlite3", "./bdd/table.db")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer db.Close()
 
 	users := []games.ScoreBoard{}
-	// for
+	usersMap := map[int]int{}
 	query := "SELECT id_user, score FROM ROOM_USERS WHERE id_room = ?"
 	rows, err := db.Query(query, roomId)
 	if err != nil {
-		return users, err
+		return users, usersMap, err
 	}
 	defer rows.Close()
 	for rows.Next() {
@@ -95,16 +96,17 @@ func QueryRoomUsersScores(roomId int) ([]games.ScoreBoard, error) {
 		var userId int
 		err := rows.Scan(&userId, &user.Score)
 		if err != nil {
-			return users, err
+			return users, usersMap, err
 		}
 		user.Username, err = connect.QueryUserName(userId)
 		if err != nil {
-			return users, err
+			return users, usersMap, err
 		}
 		users = append(users, user)
+		usersMap[userId] = user.Score
 	}
 	if err = rows.Err(); err != nil {
-		return users, err
+		return users, usersMap, err
 	}
-	return users, nil
+	return users, usersMap, err
 }

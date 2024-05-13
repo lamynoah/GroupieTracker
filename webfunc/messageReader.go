@@ -3,7 +3,8 @@ package webfunc
 import (
 	"GT/bdd"
 	"GT/connect"
-	"GT/games"
+
+	// "GT/games"
 	"fmt"
 	"log"
 	"sync"
@@ -36,14 +37,13 @@ func reader(conn *websocket.Conn, game string) {
 			}
 		}
 	case "ptitBac":
-		
 		jsonMsg := &struct {
-			Id        int                         `json:"id_room"`
-			UserId    int                         `json:"id_user"`
-			Done      bool                        `json:"Done"`
-			Data      []string                    `json:"data"`
-			NextRound bool                        `json:"NextRound"`
-			Inputs    map[string][]games.Validation `json:"inputs"`
+			Id        int             `json:"id_room"`
+			UserId    int             `json:"id_user"`
+			Done      bool            `json:"Done"`
+			Data      []string        `json:"data"`
+			NextRound bool            `json:"NextRound"`
+			Inputs    map[string]bool `json:"inputs"`
 		}{}
 		for {
 			err := conn.ReadJSON(jsonMsg)
@@ -68,9 +68,10 @@ func reader(conn *websocket.Conn, game string) {
 				room.IsDone = true
 				room.SendToRoom("end round")
 			}
-			if jsonMsg.NextRound {
+			switch {
+			case jsonMsg.NextRound : 
 				room.NextRound()
-			} else if len(jsonMsg.Data) > 0 {
+			case len(jsonMsg.Data) > 0 : 
 				username, err := connect.QueryUserName(jsonMsg.UserId)
 				if err != nil {
 					log.Println("useridQuery : ", err)
@@ -82,13 +83,12 @@ func reader(conn *websocket.Conn, game string) {
 					return true
 				})
 				room.SendToRoom(ui)
-				fmt.Println(&room.UsersInputs)
-			} else if len(jsonMsg.Inputs) > 0 {
+			case len(jsonMsg.Inputs) > 0 : 
 				fmt.Println("inputs :", jsonMsg.Inputs)
 				room.UsersPointsInputs = append(room.UsersPointsInputs, jsonMsg.Inputs)
-				// room.UsersPointsInputs = jsonMsg.Inputs
-				continue
+				AddScoreToPlayer(jsonMsg.Id, jsonMsg.UserId, 5)
 			}
+			
 		}
 	case "loading":
 		jsonMsg := &struct {
@@ -99,7 +99,6 @@ func reader(conn *websocket.Conn, game string) {
 		for {
 			err := conn.ReadJSON(jsonMsg)
 			if err != nil {
-				fmt.Println("here")
 				log.Println(err)
 				return
 			}

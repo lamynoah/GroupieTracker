@@ -107,27 +107,3 @@ func lenOfMap(v *syncmap.Map) int {
 	})
 	return i
 }
-
-// func CompareValue(arrayInput []games.Validation) bool {
-// 	// room := arrayInput[0]
-// 	// room.UserInputs
-// 	return false
-// }
-
-// func AddScore(db *sql.DB, v games.Validation, RoomId, UserId int) error {
-// 	room := arrayRoom[RoomId]
-
-// 	var newScore int
-// 	insertQuery,err := db.Prepare("INSERT INTO ROOM_USERS (id_room, id_user, score) VALUES (?,?,?)")
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer insertQuery.Close()
-
-// 	_, err = insertQuery.Exec(&RoomId,&UserId)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-
-// }

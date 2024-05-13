@@ -90,15 +90,3 @@ func ScoreBoardData(room int, db *sql.DB) []ScoreBoard {
 	}
 	return dataScoreBoard
 }
-
-// [id_user, catégorie, input, valeur button] -> {1} on regarde s il = other[1] si c est le cas score +1 sinon +2
-
-type Validation struct {
-	Category string `json:"username"`
-	Input    string `json:"input"`
-	Value    bool   `json:"value"`
-}
-
-
-
-// On prends [3].categories  si majorité false == 0 sinon true == 2 et si reponse non unique score == 1
