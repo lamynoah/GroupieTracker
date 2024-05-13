@@ -8,7 +8,10 @@
 </head>
 
 <body>
-    <div>test</div>
+    <h1>lyrics</h1>
+    <h3 style="white-space: pre-line;">{{.Lyrics}}</h3>
+    <label for="title">Titre de l'oeuvre :</label>
+    <input type="text" name="title" id="title"></input>
     {{template "socket" "deafTest"}}
 </body>
 

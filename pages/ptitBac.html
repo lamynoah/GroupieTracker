@@ -35,13 +35,13 @@
     {{template "socket" "ptitBac"}}
     <script>
         class JsonMsg {
-            constructor(id_room, id_user, Done, data, NextRound) {//, inputs) {
+            constructor(id_room, id_user, Done, data, NextRound, inputs) {
                 this.id_room = id_room
                 this.id_user = id_user
                 this.Done = Done
                 this.data = data
                 this.NextRound = NextRound
-                // this.inputs = inputs
+                this.inputs = inputs
             }
         }
         let time = Number.parseInt("{{.Time}}")
@@ -57,6 +57,7 @@
         let inter;
         function startTimer(startTime = null) {
             if (inter) clearInterval(inter)
+            if (document.getElementById("timer").hasAttribute("style")) document.getElementById("timer").removeAttribute("style")
             if (startTime) time = startTime
             timerDiv.textContent = `${time}s`
             inter = setInterval(() => {
@@ -104,7 +105,9 @@
             // map[username]inputs
             if (obj.letter) {
                 //send Inputs
-                send(new JsonMsg(getRoomId(),id_user, false, [], getInputs()))
+                let data = new JsonMsg(getRoomId(), id_user, false, [], false, getInputs())
+                send(data)
+                console.log("sended inputs :", data)
 
                 // console.log("change round the new letter is :", obj.letter)
                 // console.log("change round the new time is :", obj.time)
@@ -155,7 +158,7 @@
                     break;
                 case "end game":
                     console.log("end game")
-                    // window.location.replace("http://localhost:8080/score" + window.location.search)
+                    window.location.replace("http://localhost:8080/score" + window.location.search)
                     break
             }
         }
@@ -175,21 +178,6 @@
             }
         }
 
-        // function getInputs() {
-        //     let categories = Array.from(document.querySelectorAll("#result > h3")).map(e => e.textContent)
-        //     let result = {}
-        //     Array.from(document.querySelectorAll("#result > ul")).forEach((ul, i) => {
-        //         result[categories[i]] = Array.from(ul.getElementsByTagName("li")).map(li => {
-        //             let username = li.textContent.split(":")[0].trim()
-        //             let input = li.textContent.split(":")[1].trim()
-        //             let value = li.getElementsByTagName("button")[0].classList.contains("true") ? true : false
-        //             return new Validation(username, input, value)
-        //         })
-        //     })
-        //     console.log(new Map(Object.entries(result)))
-        //     return new Map(Object.entries(result))
-        // }
-
         function getInputs() {
             let categories = Array.from(document.querySelectorAll("#result > h3")).map(e => e.textContent)
             let result = {}
@@ -201,9 +189,25 @@
                     return new Validation(username, input, value)
                 })
             })
-            // console.log(Object.entries(result))
-            return result
+            console.log(new Map(Object.entries(result)))
+            return new Map(Object.entries(result))
         }
+
+        /*
+        // function getInputs() {
+        //     let categories = Array.from(document.querySelectorAll("#result > h3")).map(e => e.textContent)
+        //     let result = {}
+        //     Array.from(document.querySelectorAll("#result > ul")).forEach((ul, i) => {
+        //         result[categories[i]] = Array.from(ul.getElementsByTagName("li")).map(li => {
+        //             let username = li.textContent.split(":")[0].trim()
+        //             let input = li.textContent.split(":")[1].trim()
+        //             let value = li.getElementsByTagName("button")[0].classList.contains("true") ? true : false
+        //             return new Validation(username, input, value)
+        //         })
+        //     })
+        //     // console.log(Object.entries(result))
+        //     return result
+        // }
 
         // function sendInputs() {
         //     let categories = Array.from(document.querySelectorAll("#result > h3")).map(e => e.textContent)
@@ -213,6 +217,7 @@
         //         Array.from(e.childNodes).forEach()
         //     })
         // }
+        */
     </script>
 </body>
 

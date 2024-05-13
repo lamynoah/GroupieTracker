@@ -55,7 +55,6 @@ func QueryRoomUsers(roomId int) ([]string, error) {
 	defer db.Close()
 
 	users := []string{}
-	// for
 	query := "SELECT u.username FROM Users AS u INNER JOIN ROOM_USERS AS ru ON u.UserID = ru.id_user WHERE id_room = ?"
 	rows, err := db.Query(query, roomId)
 	if err != nil {
@@ -75,7 +74,6 @@ func QueryRoomUsers(roomId int) ([]string, error) {
 	}
 	return users, nil
 }
-
 
 func QueryRoomUsersScores(roomId int) ([]games.ScoreBoard, error) {
 	db, err := sql.Open("sqlite3", "./bdd/table.db")

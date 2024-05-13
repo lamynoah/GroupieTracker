@@ -99,21 +99,6 @@ type Validation struct {
 	Value    bool   `json:"value"`
 }
 
-// func CompareValue([]Validation) bool {
-// 	room = arrayInput[0]
-// 	room.UserInputs
-// }
 
-// func AddScore(db *sql.DB, v Validation, RoomId, UserId) error {
-// 	insertQuery,err := db.Prepare("INSERT INTO ROOM_USERS (id_room, id_user, score) VALUES (?,?,?)")
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer insertQuery.Close()
 
-// 	_, err = insertQuery.Exec(v.RoomId,v.UserId, 1)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
+// On prends [3].categories  si majorité false == 0 sinon true == 2 et si reponse non unique score == 1

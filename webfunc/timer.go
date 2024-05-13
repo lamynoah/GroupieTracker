@@ -35,7 +35,7 @@ func (room *PtitBacData) StartTimer() {
 	// time.Sleep(time.Duration(room.Timer) * time.Second)
 	if !room.IsDone && ended {
 		room.SendToRoom("end round")
-		log.Println("round done because of timeout")
+		log.Println("round done because of someone or timeout")
 		room.IsDone = true
 	}
 }

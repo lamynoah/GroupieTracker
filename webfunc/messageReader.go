@@ -49,6 +49,7 @@ func reader(conn *websocket.Conn, game string) {
 			err := conn.ReadJSON(jsonMsg)
 			if err != nil {
 				log.Println(err)
+				break
 			}
 			fmt.Println("msg :", jsonMsg)
 			room := arrayRoom[jsonMsg.Id]
