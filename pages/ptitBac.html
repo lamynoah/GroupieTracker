@@ -83,11 +83,7 @@
             }
         }
 
-        socket.onopen = () => {
-            const data = new JsonMsg(getRoomId(), 0, false, [], false)
-            console.log(data)
-            send(data)
-        }
+
         socket.onmessage = msg => {
             class Validation {
                 constructor(username, input, value) {

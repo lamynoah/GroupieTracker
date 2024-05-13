@@ -1,15 +1,13 @@
 package main
 
 import (
+	"GT/bdd"
 	"GT/webfunc"
 	"fmt"
-	"GT/bdd"
 	"net/http"
-	
+
 	_ "github.com/mattn/go-sqlite3"
 )
-
-
 
 func main() {
 	// bdd.CreateUserTable()
@@ -25,31 +23,38 @@ func main() {
 	// games routes
 	http.HandleFunc("/selectGame", webfunc.Select)
 	http.HandleFunc("/blindTest", webfunc.BlindTestPage)
-	http.HandleFunc("/deaftest", webfunc.DeafTestPage)
+	http.HandleFunc("/deafTest", webfunc.DeafTestPage)
 	http.HandleFunc("/ptitBac", webfunc.PtitbacPage)
+	// settings Pages
 	http.HandleFunc("/settingBacPage", webfunc.SettingBacPage)
-	http.HandleFunc("/lobby", webfunc.Lobby)
-	http.HandleFunc("/loadingPage", webfunc.Loading)
-	http.HandleFunc("/lobbyDeaftest", webfunc.LobbyDeaftest)
 	http.HandleFunc("/settingDeaftest", webfunc.SettingDeaftest)
-	http.HandleFunc("/loadingPageDeaftest", webfunc.LoadingPageDeafTest)
+	// lobby Pages
+	http.HandleFunc("/lobby", webfunc.Lobby)
+	http.HandleFunc("/lobbyDeafTest", webfunc.LobbyDeaftest)
+	// loading Pages
+	http.HandleFunc("/loadingPage", webfunc.Loading)
+	http.HandleFunc("/loadingPageDeafTest", webfunc.LoadingPageDeafTest)
+	// create Rooms Routes
 	http.HandleFunc("/createRoom", webfunc.CreateRoom)
-	http.HandleFunc("/createRoomDeaftest", webfunc.CreateRoomDeafTest)
+	http.HandleFunc("/createRoomDeafTest", webfunc.CreateRoomDeafTest)
+
 	http.HandleFunc("/score", webfunc.Score)
 	// http.HandleFunc("/result", webfunc.Result)
+
 	// websockets routes
 	http.HandleFunc("/ws", webfunc.WebSocket)
 	http.HandleFunc("/ws/blindTest", webfunc.WebSocket)
 	http.HandleFunc("/ws/deafTest", webfunc.WebSocket)
 	http.HandleFunc("/ws/ptitBac", webfunc.WebSocket)
 	http.HandleFunc("/ws/loading", webfunc.WebSocket)
-	http.HandleFunc("/ws/lobbyDeaftest", webfunc.WebSocket)
-	http.HandleFunc("/ws/loadingPageDeafTest", webfunc.WebSocket)
+	http.HandleFunc("/ws/loadingDeafTest", webfunc.WebSocket)
 	http.HandleFunc("/ws/result", webfunc.WebSocket)
+
 	//conn, _ := net.Dial("tcp", "google.com:http")
 	//fmt.Println(conn.LocalAddr())
 
-	bdd.DeleteRoomsUser()
+	bdd.DeleteRoomUsers()
+	bdd.DeleteRooms()
 
 	// Create css directory
 	fs := http.FileServer(http.Dir("static/"))

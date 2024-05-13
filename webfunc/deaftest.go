@@ -2,7 +2,6 @@ package webfunc
 
 import (
 	"html/template"
-	"math/rand"
 	"net/http"
 )
 
@@ -12,9 +11,12 @@ type Music struct {
 }
 
 func DeafTestPage(w http.ResponseWriter, r *http.Request) {
-	temp, _ := template.ParseFiles("./pages/deafTest.html", "./template/websocket.html")
-	randomMusic := songs[(rand.Int() % len(songs))]
-	temp.Execute(w, randomMusic)
+	temp, _ := template.ParseFiles("./pages/deaftest.html", "./template/websocket.html")
+	r.ParseForm()
+	roomId := getRoomIdFromPage(r)
+	room := arrayRoomDeaftest[roomId]
+	// fmt.Println(room.CurrentSong)
+	temp.Execute(w, room)
 }
 
 // func (m Music) getLyrics() string { return m.Lyrics }

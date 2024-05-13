@@ -9,10 +9,129 @@
 
 <body>
     <h1>lyrics</h1>
-    <h3 style="white-space: pre-line;">{{.Lyrics}}</h3>
+    <div> Nombre de round : <span id="round">{{ .CurrentRound}}</span> / {{.MaxRound}}</div>
+    <h3 style="white-space: pre-line;">{{.currentSong.Lyrics}}</h3>
     <label for="title">Titre de l'oeuvre :</label>
     <input type="text" name="title" id="title"></input>
+    <button onclick="send(new JsonMsg(getRoomId(), id_user, true, [], false, []))">Send</button>
     {{template "socket" "deafTest"}}
+    <script>
+        class JsonMsg {
+            constructor(id_room, id_user, Done, data, NextRound, inputs) {
+                this.id_room = id_room
+                this.id_user = id_user
+                this.Done = Done
+                this.data = data
+                this.NextRound = NextRound
+                this.inputs = inputs
+            }
+        }
+        let time = Number.parseInt("{{.currentTime}}")
+        let round = Number.parseInt("{{.CurrentRound}}")
+        let input = document.querySelector("input[type='text']")
+        let id_user = Number.parseInt(getCookie('Id'))
+
+        const timerDiv = document.querySelector("#timer")
+        if (time < 1) { // || JSON.parse("{{.IsDone}}")) {
+            toggleDisplay()
+        }
+
+        let inter;
+        function startTimer(startTime = null) {
+            if (inter) clearInterval(inter)
+            if (document.getElementById("timer").hasAttribute("style")) document.getElementById("timer").removeAttribute("style")
+            if (startTime) time = startTime
+            timerDiv.textContent = `${time}s`
+            inter = setInterval(() => {
+                time--
+                timerDiv.textContent = `${time}s`
+                if (time === 10) timerDiv.style.color = "red"
+                else if (time < 1) {
+                    clearInterval(inter)
+                }
+            }, 1000)
+        }
+        startTimer()
+
+        function toggleDisplay() {
+            const game = document.querySelector("#in-game")
+            const result = document.querySelector("#result")
+            if (game.hasAttribute("style")) {
+                game.removeAttribute("style")
+                result.style.display = "none"
+            } else {
+                game.style.display = "none"
+                result.removeAttribute("style")
+            }
+        }
+
+
+        socket.onmessage = msg => {
+            console.log("recieved :", msg.data)
+            let obj = JSON.parse(msg.data)
+            if (obj.lyrics) {
+                //send Inputs
+                let data = new JsonMsg(getRoomId(), id_user, false, [], false, getInputs())
+                send(data)
+                console.log("sended inputs :", data)
+
+                const newLetter = document.getElementById("letter")
+                newLetter.textContent = obj.letter
+                inputs.forEach(e => {
+                    e.value = ""
+                })
+                startTimer(obj.time)
+                send(new JsonMsg(getRoomId(), id_user, false, [], true, []))
+                round++
+                document.getElementById("round").textContent = round
+            } else if (typeof obj === "object") {
+                const divs = document.getElementsByClassName("user-result")
+                const map = new Map(Object.entries(obj))
+                map.forEach((value, key) => value.forEach((v, i) => {
+                    const li = document.createElement("li")
+                    li.textContent = `${key}: ${v}`
+                    const btnVerif = document.createElement("button")
+                    btnVerif.classList.toggle("true")
+                    btnVerif.onclick = function () {
+                        const category = key;
+                        const value = v;
+                        if (btnVerif.classList.contains("true")) {
+                            btnVerif.classList.toggle("true")
+                            btnVerif.classList.toggle("false")
+                        } else {
+                            btnVerif.classList.toggle("false")
+                            btnVerif.classList.toggle("true")
+                        }
+                    }
+
+                    li.appendChild(btnVerif)
+                    divs[i].append(li)
+                }))
+            }
+            switch (obj) {
+                case "end round":
+                    if (inter) clearInterval(inter)
+                    toggleDisplay()
+                    const arr = Array.from(document.querySelectorAll("input[type='text']")).map(e => e.value)
+                    // console.log(arr)
+                    send(new JsonMsg(getRoomId(), Number.parseInt(getCookie("Id")), false, arr, false))
+                    break;
+                case "end game":
+                    //send Inputs
+                    let data = new JsonMsg(getRoomId(), id_user, false, [], false, getInputs())
+                    send(data)
+                    console.log("sended inputs :", data)
+                    console.log("end game")
+                    window.location.replace("http://localhost:8080/score" + window.location.search)
+                    break;
+            }
+        }
+        document.querySelector("#send").addEventListener("click", e => {
+            const data = new JsonMsg(getRoomId(), 0, true, [], false)
+            send(data)
+            console.log("send :", data)
+        })
+    </script>
 </body>
 
 </html>

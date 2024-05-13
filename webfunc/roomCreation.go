@@ -74,7 +74,7 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 		CurrentTime:  timer,
 	}
 
-	http.Redirect(w, r, "/loadingPage?room=" + fmt.Sprint(roomID), http.StatusFound)
+	http.Redirect(w, r, "/loadingPage?room="+fmt.Sprint(roomID), http.StatusFound)
 }
 
 func CreateRoomDeafTest(w http.ResponseWriter, r *http.Request) {
@@ -86,7 +86,7 @@ func CreateRoomDeafTest(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	v := parseValuesFromPage(r, []string{"name"})
+	name := r.FormValue("name")
 	vInt := parseIntValuesFromPage(r, []string{"timerSeconds", "roundsNumber"})
 
 	db, err := sql.Open("sqlite3", BDDPath)
@@ -97,7 +97,7 @@ func CreateRoomDeafTest(w http.ResponseWriter, r *http.Request) {
 	room := games.ROOM{
 		Created_by:  UserId,
 		Max_players: max_player,
-		Name:        v[0],
+		Name:        name,
 		Id_game:     2,
 	}
 	bdd.InsertRooms(room.Created_by, room.Max_players, room.Name, room.Id_game)
@@ -107,6 +107,7 @@ func CreateRoomDeafTest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	arrayRoomDeaftest[roomID] = &DeafTestData{
+		Id:           roomID,
 		RoomLink:     "?room=" + fmt.Sprint(roomID),
 		IsStarted:    false,
 		Timer:        vInt[0],
@@ -114,8 +115,8 @@ func CreateRoomDeafTest(w http.ResponseWriter, r *http.Request) {
 		CurrentRound: 1,
 		CurrentTime:  vInt[0],
 	}
-
-	http.Redirect(w, r, "/loadingPageDeaftest?room=" + fmt.Sprint(roomID), http.StatusFound)
+	fmt.Println("here :", "/loadingPageDeafTest?room="+fmt.Sprint(roomID))
+	http.Redirect(w, r, "/loadingPageDeafTest?room="+fmt.Sprint(roomID), http.StatusFound)
 }
 
 func parseValuesFromPage(r *http.Request, names []string) []string {

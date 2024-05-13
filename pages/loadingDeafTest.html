@@ -10,12 +10,13 @@
 <body>
     <div> En attente que les autres joueurs rejoignent </div>
     <div>joueurs connectés : <span id="users"></span></div>
-    {{if . }}<button onclick="send(new JsonMsg(getRoomId(), Number.parseInt(getCookie('Id')), true))" disabled>Start all</button>{{end}}
-    {{template "socket" "loading"}}
+    {{if . }}<button onclick="send(new JsonMsg(getRoomId(), Number.parseInt(getCookie('Id')), true))" disabled>Start
+        all</button>{{end}}
+    {{template "socket" "loadingDeafTest"}}
     {{if . }}
     <script>
-        class JsonMsg{
-            constructor(id_room, id_user, start){
+        class JsonMsg {
+            constructor(id_room, id_user, start) {
                 this.id_room = id_room
                 this.id_user = id_user
                 this.start = start
@@ -30,17 +31,17 @@
             console.log(msg.data)
             let data = JSON.parse(msg.data)
             if (data === "start game") {
-                window.location.replace("http://localhost:8080/deaftest" + window.location.search);
+                window.location.replace("http://localhost:8080/deafTest" + window.location.search);
             } else if (Array.isArray(data)) {
-                if (users.children) Array.from(users.children).forEach(e=>e.remove())
+                if (users.children) Array.from(users.children).forEach(e => e.remove())
                 users.textContent = data.join(', ')
             }
         }
     </script>
     {{else}}
     <script>
-        class JsonMsg{
-            constructor(id_room, id_user, Start){
+        class JsonMsg {
+            constructor(id_room, id_user, Start) {
                 this.id_room = id_room
                 this.id_user = id_user
                 this.Start = Start
@@ -54,15 +55,16 @@
             let data = JSON.parse(msg.data)
             console.log(data)
             if (data === "start game") {
+                console.log("received")
                 window.location.replace("http://localhost:8080/deafTest" + window.location.search);
             } else if (Array.isArray(data)) {
-                if (users.children) Array.from(users.children).forEach(e=>e.remove())
+                if (users.children) Array.from(users.children).forEach(e => e.remove())
                 users.textContent = data.join(', ')
             }
         }
     </script>
     {{end}}
-    
+
 </body>
 
 </html>

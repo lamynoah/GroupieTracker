@@ -18,7 +18,7 @@ type Song struct {
 	Lyrics string
 }
 
-func GetLyrics() Song {
+func GetSong() Song {
 	songs := []Song{}
 	content, err := os.ReadFile("./static/json/songs.json")
 	if err != nil {

@@ -2,9 +2,14 @@ package webfunc
 
 import (
 	"GT/bdd"
+	"GT/connect"
 	"database/sql"
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"regexp"
+	"strings"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -21,6 +26,7 @@ const BDDPath = "./bdd/table.db"
 // var ptitBacConns = ConnSet{}
 
 type PtitBacData struct {
+	id                int
 	RoomLink          string
 	PtitBacConns      syncmap.Map
 	Letter            string
@@ -36,17 +42,34 @@ type PtitBacData struct {
 	UsersPointsInputs [](map[string]bool)
 }
 
+func (room *PtitBacData) getId() int {
+	return room.id
+}
 
 type DeafTestData struct {
-	RoomLink   string
+	Id            int
+	RoomLink      string
 	DeafTestConns syncmap.Map
-	IsStarted  bool
-	UsersInputs syncmap.Map
-	Timer      int
-	MaxRound   int
-	CurrentRound int
-	CurrentTime int
-	IsDone     bool
+	IsStarted     bool
+	UsersInputs   syncmap.Map
+	Timer         int
+	MaxRound      int
+	CurrentRound  int
+	CurrentSong   Song
+	CurrentTime   int
+	IsDone        bool
+}
+
+func (room *DeafTestData) SendToRoom(msg any) {
+	room.DeafTestConns.Range(func(key any, v any) bool {
+		v.(*sync.Mutex).Lock()
+		defer v.(*sync.Mutex).Unlock()
+		if err := key.(*websocket.Conn).WriteJSON(msg); err != nil {
+			log.Println(err)
+			return false
+		}
+		return true
+	})
 }
 
 func (room *PtitBacData) SendToRoom(msg any) {
@@ -99,8 +122,75 @@ func AddScoreToPlayer(roomId, userId, number int) {
 	}
 }
 
+func (room *DeafTestData) CalcPoints() {
+	room.UsersInputs.Range(func(key, value any) bool {
+		if CleanStr(value.(string)) == CleanStr(room.CurrentSong.Author) || CleanStr(value.(string)) == CleanStr(room.CurrentSong.Title) {
+			AddScoreToPlayer(room.Id, key.(int), 1)
+		}
+		return true
+	})
+}
+func (room *PtitBacData) CalcPoints() {
+	type Inputed struct {
+		Username string `json:"username"`
+		Category string `json:"category"`
+		Input    string `json:"input"`
+	}
+	type UserCat struct {
+		UserId   int    `json:"username"`
+		Category string `json:"category"`
+	}
+	rightKeys := []string{}
+	for i := range room.UsersPointsInputs[0] {
+		if room.IsRight(i) {
+			rightKeys = append(rightKeys, i)
+		}
+	}
+
+	inputs := map[string][]UserCat{}
+
+	for _, v := range rightKeys {
+		temp := Inputed{}
+		err := json.Unmarshal([]byte(v), &temp)
+		if err != nil {
+			log.Println("CalcPoints(for(Unmarshal)):", err)
+		} else {
+			fmt.Println("unmarshal result:", temp)
+		}
+
+		UserId, err := connect.QueryUserId(temp.Username)
+		if err != nil {
+			log.Println("CalcPoints(for(QueryUserId)):", err)
+		}
+		tretedName := CleanStr(strings.ToLower(temp.Input))
+		inputs[temp.Input] = append(inputs[tretedName], UserCat{UserId, temp.Category})
+	}
+
+	// db, err := sql.Open("sqlite3", BDDPath)
+	// if err != nil {
+	// 	log.Println("CalcPoints(sql.Open):", err)
+	// }
+
+	for _, v := range inputs {
+		if len(v) > 1 {
+			for _, v2 := range v {
+				AddScoreToPlayer(room.getId(), v2.UserId, 1)
+			}
+		} else {
+			AddScoreToPlayer(room.getId(), v[0].UserId, 2)
+		}
+	}
+	// db.Close()
+}
+
+func CleanStr(str string) string {
+	regex := regexp.MustCompile(`\W+`)
+	cleanedStr := regex.ReplaceAllString(str, "")
+	return cleanedStr
+}
+
 // Recup la cate  puis
-func (room *PtitBacData) isRight(key string) bool {
+func (room *PtitBacData) IsRight(key string) bool {
 	nbplayers := lenOfMap(&room.PtitBacConns)
 	count := 0
 	for _, v := range room.UsersPointsInputs {

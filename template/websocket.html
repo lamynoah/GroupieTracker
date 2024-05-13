@@ -15,14 +15,15 @@
 
     console.log("Attempting Connection...");
     socket.onopen = () => {
-        console.log("Successfully Connected");
-        socket.send("Hi From the Client!")
-    };
+        const data = new JsonMsg(getRoomId(), 0, false, [], false)
+        console.log(data)
+        send(data)
+    }
 
-    socket.onclose = event => {
-        console.log("Socket Closed Connection: ", event);
-        socket.send("Client Closed!")
-    };
+    // socket.onclose = event => {
+    //     console.log("Socket Closed Connection: ", event);
+    //     socket.send("Client Closed!")
+    // };
 
     socket.onmessage = msg => {
         console.log("Message Recieved: ", msg);
