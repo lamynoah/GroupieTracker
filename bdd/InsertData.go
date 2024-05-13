@@ -7,7 +7,7 @@ import (
 )
 
 func InsertUser(username, email, password string) error {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", "./bdd/table.db")
 	if err != nil {
 		return err
 	}
@@ -22,7 +22,7 @@ func InsertUser(username, email, password string) error {
 }
 
 func InsertRooms(created_by int, max_player int, name string, id_game int) error {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", "./bdd/table.db")
 	if err != nil {
 		return err
 	}
@@ -36,12 +36,12 @@ func InsertRooms(created_by int, max_player int, name string, id_game int) error
 }
 
 func InsertRoomsUser(id_room, id_user, score int) error {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", "./bdd/table.db")
 	if err != nil {
 		return err
 	}
 	defer db.Close()
-	insertQuery := "INSERT INTO ROOM_USER(id_room, id_user, score) Values(?,?,?)"
+	insertQuery := "INSERT INTO ROOM_USERS(id_room, id_user, score) Values(?,?,?)"
 	_, err = db.Exec(insertQuery, id_room, id_user, score)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func InsertRoomsUser(id_room, id_user, score int) error {
 }
 
 func InsertGames(name string) error {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", "./bdd/table.db")
 	if err != nil {
 		return err
 	}

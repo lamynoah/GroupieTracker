@@ -1,28 +1,100 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Timer Configuration</title>
+    <title>Partie Configuration</title>
+    <link rel="stylesheet" type="text/css" href="/static/styles/settingsptitbac.css">
 </head>
 
 <body>
-    <h2>Timer Configuration</h2>
+    <h2>Création d'une partie</h2>
     <form action="/createRoom" method="post">
-        <label for="timerSeconds">Number of seconds for the timer:</label>
-        <input type="number" id="timerSeconds" name="timerSeconds" min="1" required>
+        <label for="timerSeconds">Nombre de seconde pour le timer :</label>
+        <input type="number" id="timerSeconds" name="timerSeconds" min="10" required>
         <br>
-        <label for="roundsNumber">Number of rounds (must be less than 26):</label>
+        <label for="roundsNumber">Nombre de round (26 rounds maximum):</label>
         <input type="number" id="roundsNumber" name="roundsNumber" min="1" max="25" required>
-        <br> 
-        <label for="playersNumber"> Number of player</label>
-        <input type="number" id="playersNumber" name="playersNumber" min="1" required>
         <br>
-        <label for="name"> Name : </label>
+        <label for="playersNumber"> Nombre de joueurs max :</label>
+        <input type="number" id="playersNumber" name="playersNumber" min="1" max="10" required>
+        <br>
+        <label for="name"> Nom : </label>
         <input type="text" id="name" name="name" required>
         <input type="submit" value="Start">
+
+        <h1>Catégories</h1>
+        <label for="new">Nouvelle Catégorie :</label>
+        <input id="new" type="text" maxlength="20">
+        <input id="addbtn" type="submit" value="Add">
+        <input name="JSON" id="JSON" hidden>
+        <p>Clique droit pour supprimer<br>Clique gauche pour modifier</p>
+        <div id="categories" style="display: flex; flex-wrap: wrap; width: 100%;"></div>
     </form>
-</body>
+    <script>
+        let categories = ["Artiste", "Album", "Groupe de musique", "Instrument de musique", "Featuring"]
+        let c = document.querySelector("#categories")
+
+        let addCat = name => {
+            if (name.length < 1) return
+            const elem = document.createElement("button")
+            elem.textContent = name
+            elem.style.margin = "2.5px"
+            elem.onclick = e => {
+                e.preventDefault()
+                // Create an input field
+                const inputField = document.createElement('input');
+                inputField.type = 'text';
+                const previousText = inputField.value = elem.textContent;
+
+                elem.disabled = true
+                // Replace button text with input field
+                elem.textContent = '';
+                elem.appendChild(inputField);
+
+                // Focus on the input field
+                inputField.focus();
+
+                // Add event listener to input field for when editing is done
+                inputField.addEventListener('blur', function () {
+                    // Set the text of the button to the input field value
+                    console.log("> 0 : ", inputField.value.length > 0)
+                    console.log("result : ", (inputField.value.length > 0) ? inputField.value : previousText)
+                    elem.textContent = (inputField.value.length > 0) ? inputField.value : previousText;
+                    elem.disabled = false
+                })
+            }
+            elem.addEventListener("contextmenu", () => {
+                c.removeChild(elem)
+            })
+            c.append(elem)
+        }
+        // MutationObserver to observe changes in the categories div
+        const observer = new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                if (mutation.type === 'childList') {
+                    // console.log('Children have been added or removed');
+                    categories = Array.from(c.childNodes).map(e => e.textContent)
+                }
+            });
+        });
+        observer.observe(c, { childList: true });
+
+        const f = document.querySelector("form")
+        f.addEventListener("submit", e => {
+            e.preventDefault()
+            document.querySelector("input[name='JSON']").value = JSON.stringify(categories)
+            f.submit()
+        })
+        document.getElementById("addbtn").addEventListener("click", e => {
+            e.preventDefault()
+            addCat(document.getElementById("new").value)
+        })
+        categories.forEach(e => {
+            addCat(e)
+        })
+        document.querySelector("input[name='JSON']").setAttribute.value = JSON.stringify(categories)
+    </script>
 
 </html>

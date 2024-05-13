@@ -87,15 +87,6 @@ func extractTrackID(playlistID string) []string {
 	}
 	defer resp.Body.Close()
 
-	var playlistData struct {
-		Tracks struct {
-			Items []struct {
-				Track struct {
-					ID string `json:"id"`
-				} `json:"track"`
-			} `json:"items"`
-		} `json:"tracks"`
-	}
 	if err := json.NewDecoder(resp.Body).Decode(&playlistData); err != nil {
 		log.Fatal("Error decoding JSON", err)
 	}

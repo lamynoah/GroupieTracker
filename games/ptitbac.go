@@ -1,14 +1,15 @@
 package games
 
 import (
+	"GT/connect"
+
+	"database/sql"
 	"log"
 	"math/rand"
-	"time"
 )
 
 func GenererLetters() string {
-	letters := "abcdefghijklmnopqrstuvwxyz"
-	rand.Seed(time.Now().UnixNano())
+	letters := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	index := rand.Intn(len(letters))
 	return string(letters[index])
 }
@@ -33,15 +34,59 @@ func GenerateUniqueLetters(arrayLetter *[]string) string {
 	}
 }
 
-func StartTimer(duration int) {
-	time.Sleep(time.Duration(duration) * time.Second)
-	log.Println("Timer expired!")
+type Input struct {
+	Artiste    string
+	Album      string
+	Groupe     string
+	Instrument string
+	Featuring  string
 }
 
-// func RecupInput(w http.ResponseWriter, r *http.Request) {
-// 	artiste := r.FormValue("artiste")
-// 	album := r.FormValue("album")
-// 	groupe := r.FormValue("groupe")
-// 	instrument := r.FormValue("instrument")
-// 	featuring := r.FormValue("featuring")
-// }
+func IsElementUnique(arrayInput []Input) {
+	mapArtiste := make(map[string]int)
+	mapAlbum := make(map[string]int)
+	mapGroupe := make(map[string]int)
+	mapInstrument := make(map[string]int)
+	mapFeaturing := make(map[string]int)
+	for _, v := range arrayInput {
+		mapArtiste[v.Artiste]++
+		mapAlbum[v.Album]++
+		mapGroupe[v.Groupe]++
+		mapInstrument[v.Instrument]++
+		mapFeaturing[v.Featuring]++
+	}
+	// Si réponse Unique score += 2 si réponse non unique score += 1
+	// {"noah":2,"omar":1}
+}
+
+// artiste = noah && artiste = noah  == 1 points
+
+type ScoreBoard struct {
+	Username string
+	Score    int
+}
+
+func ScoreBoardData(room int, db *sql.DB) []ScoreBoard {
+	rows, err := db.Query("SELECT id_user, score FROM ROOM_USERS WHERE id_room=? ORDER BY score DESC", room)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	dataScoreBoard := []ScoreBoard{}
+	for rows.Next() {
+		var idUser int
+		var score int
+		if err := rows.Scan(&idUser, &score); err != nil {
+			log.Fatal(err)
+		}
+		username, err := connect.QueryUserName(idUser)
+		if err != nil {
+			log.Println(err)
+		}
+		dataScoreBoard = append(dataScoreBoard, ScoreBoard{Username: username, Score: score})
+	}
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+	return dataScoreBoard
+}

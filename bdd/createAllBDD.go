@@ -2,12 +2,13 @@ package bdd
 
 import (
 	"database/sql"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func CreateUserTable() error {
 
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", "./bdd/table.db")
 	if err != nil {
 		return err
 	}
@@ -28,7 +29,7 @@ func CreateUserTable() error {
 }
 
 func CreateRoomsTable() error {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", "./bdd/table.db")
 	if err != nil {
 		return err
 	}
@@ -55,7 +56,7 @@ func CreateRoomsTable() error {
 }
 
 func CreateRoomUsersTable() error {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", "./bdd/table.db")
 	if err != nil {
 		return err
 	}
@@ -81,7 +82,7 @@ func CreateRoomUsersTable() error {
 }
 
 func CreateGamesTable() error {
-	db, err := sql.Open("sqlite3", "./BDD/table.db")
+	db, err := sql.Open("sqlite3", "./bdd/table.db")
 	if err != nil {
 		return err
 	}
