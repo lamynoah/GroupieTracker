@@ -6,6 +6,8 @@ body {
 button {
     color: black;
     position: center;
+    padding: 10px 20px;
+    margin: 10px;
 }
 
 .triangle {
@@ -30,6 +32,10 @@ button {
     align-items: center;
 }
 
+.container > div {
+    text-align: center;
+    margin: 0 20px;
+} 
 .container-images {
     position: fixed;
     top: 10vh; 
