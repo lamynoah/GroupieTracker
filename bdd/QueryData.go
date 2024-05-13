@@ -1,6 +1,7 @@
 package bdd
 
 import (
+	"GT/connect"
 	"GT/games"
 	"database/sql"
 )
@@ -64,6 +65,41 @@ func QueryRoomUsers(roomId int) ([]string, error) {
 	for rows.Next() {
 		var user string
 		err := rows.Scan(&user)
+		if err != nil {
+			return users, err
+		}
+		users = append(users, user)
+	}
+	if err = rows.Err(); err != nil {
+		return users, err
+	}
+	return users, nil
+}
+
+
+func QueryRoomUsersScores(roomId int) ([]games.ScoreBoard, error) {
+	db, err := sql.Open("sqlite3", "./bdd/table.db")
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	users := []games.ScoreBoard{}
+	// for
+	query := "SELECT id_user, score FROM ROOM_USERS WHERE id_room = ?"
+	rows, err := db.Query(query, roomId)
+	if err != nil {
+		return users, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var user games.ScoreBoard
+		var userId int
+		err := rows.Scan(&userId, &user.Score)
+		if err != nil {
+			return users, err
+		}
+		user.Username, err = connect.QueryUserName(userId)
 		if err != nil {
 			return users, err
 		}

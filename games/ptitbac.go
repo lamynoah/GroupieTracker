@@ -99,7 +99,7 @@ type Validation struct {
 	Value    bool   `json:"value"`
 }
 
-// func CompareValue([]Validation) {
+// func CompareValue([]Validation) bool {
 // 	room = arrayInput[0]
 // 	room.UserInputs
 // }

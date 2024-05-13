@@ -28,20 +28,20 @@
         <ul class="user-result"></ul>
         {{end}}
         {{if .IsCreator}}
-        <button onclick="send(new JsonMsg(getRoomId(), Number.parseInt(getCookie('Id')), false, [], true))">Round
+        <button onclick="send(new JsonMsg(getRoomId(), Number.parseInt(getCookie('Id')), false, [], true, []))">Round
             Suivant</button>
         {{end}}
     </div>
     {{template "socket" "ptitBac"}}
     <script>
         class JsonMsg {
-            constructor(id_room, id_user, Done, data, NextRound, Inputs) {
+            constructor(id_room, id_user, Done, data, NextRound, inputs) {
                 this.id_room = id_room
                 this.id_user = id_user
                 this.Done = Done
                 this.data = data
                 this.NextRound = NextRound
-                this.Inputs = Inputs
+                this.inputs = inputs
             }
         }
         let time = Number.parseInt("{{.Time}}")
@@ -82,7 +82,7 @@
         }
 
         socket.onopen = () => {
-            const data = new JsonMsg(getRoomId(), 0, false, [], false)
+            const data = new JsonMsg(getRoomId(), 0, false, [], false, [])
             console.log(data)
             send(data)
         }
@@ -149,26 +149,45 @@
                     if (inter) clearInterval(inter)
                     toggleDisplay()
                     const arr = Array.from(document.querySelectorAll("input[type='text']")).map(e => e.value)
-                    console.log(arr)
-                    send(new JsonMsg(getRoomId(), Number.parseInt(getCookie("Id")), false, arr, false))
+                    // console.log(arr)
+                    send(new JsonMsg(getRoomId(), Number.parseInt(getCookie("Id")), false, arr, false, []))
                     break;
+                case "end game":
+                    console.log("end game")
+                    // window.location.replace("http://localhost:8080/score" + window.location.search)
+                    break
             }
         }
         document.querySelector("#send").addEventListener("click", e => {
-            const data = new JsonMsg(getRoomId(), 0, true, [], false)
+            const data = new JsonMsg(getRoomId(), 0, true, [], false, [])
             send(data)
             console.log("send :", data)
         })
 
         // [id_user, catégorie, input, valeur button] -> {1} on regarde s il = other[2] si c est le cas score +1 sinon +2
-        // <h3>Artist</h3>
-        // <ul class="user-result">
-        //      <li>noah12 : wwwwwwww<button class="true"></button></li>
-        // </ul>
-        // <h3>test</h3>
-        // <ul class="user-result"></ul>
-        // <h3>autre</h3>
-        // <ul class="user-result"></ul>
+
+        class Validation {
+            constructor(username, input, value) {
+                this.username = username
+                this.input = input
+                this.value = value
+            }
+        }
+
+        // function getInputs() {
+        //     let categories = Array.from(document.querySelectorAll("#result > h3")).map(e => e.textContent)
+        //     let result = {}
+        //     Array.from(document.querySelectorAll("#result > ul")).forEach((ul, i) => {
+        //         result[categories[i]] = Array.from(ul.getElementsByTagName("li")).map(li => {
+        //             let username = li.textContent.split(":")[0].trim()
+        //             let input = li.textContent.split(":")[1].trim()
+        //             let value = li.getElementsByTagName("button")[0].classList.contains("true") ? true : false
+        //             return new Validation(username, input, value)
+        //         })
+        //     })
+        //     console.log(new Map(Object.entries(result)))
+        //     return new Map(Object.entries(result))
+        // }
 
         function getInputs() {
             let categories = Array.from(document.querySelectorAll("#result > h3")).map(e => e.textContent)
@@ -181,12 +200,13 @@
                     return new Validation(username, input, value)
                 })
             })
-            return new Map(Object.entries(result))
+            // console.log(Object.entries(result))
+            return result
         }
 
         // function sendInputs() {
-        //     let categories = Array.from(document.querySelectorAll("#result > h3")).map(e=>e.textContent)
-        //     Array.from(document.querySelectorAll("#result > ul")).forEach(e=>{
+        //     let categories = Array.from(document.querySelectorAll("#result > h3")).map(e => e.textContent)
+        //     Array.from(document.querySelectorAll("#result > ul")).forEach(e => {
         //         let e = document.createElement("ul")
         //         const cat = e.textContent
         //         Array.from(e.childNodes).forEach()

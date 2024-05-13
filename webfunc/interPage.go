@@ -51,5 +51,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 func Score(w http.ResponseWriter, r *http.Request) {
 	temp, _ := template.ParseFiles("./pages/score.html", "./template/scoreboard.html")
-	temp.Execute(w, nil)
+	r.ParseForm()
+	roomId := getRoomIdFromPage(r)
+	scores, err := bdd.QueryRoomUsersScores(roomId)
+	if err != nil {
+		log.Fatal(err)
+	}
+	temp.Execute(w, scores)
 }

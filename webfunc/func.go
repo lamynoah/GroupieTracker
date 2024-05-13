@@ -32,7 +32,7 @@ type PtitBacData struct {
 	Categories   		[]string
 	CurrentTime  		int
 	IsDone       		bool
-	UsersPointsInputs  	[]map[string][]games.Validation
+	UsersPointsInputs  	[][]games.Validation
 }
 
 func (room *PtitBacData) SendToRoom(msg any) {

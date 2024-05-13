@@ -100,3 +100,13 @@ func getUserIdFromPage(r *http.Request) int {
 	}
 	return userId
 }
+
+func getRoomIdFromPage(r *http.Request) int {
+	r.ParseForm()
+	room := r.FormValue("room")
+	roomId, err := strconv.Atoi(room)
+	if err != nil {
+		log.Println(err)
+	}
+	return roomId
+}
