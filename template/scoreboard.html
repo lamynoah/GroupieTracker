@@ -1,0 +1,15 @@
+{{ define "scoreboard" }}
+<h1>ScoreBoard</h1>
+<table>
+    <tr>
+        <th>Pseudo</th>
+        <th>Score</th>
+    </tr>
+    {{range .}}
+    <tr>
+        <td>{{.Username}}</td>
+        <td>{{.Score}}</td>
+    </tr>
+    {{end}}
+</table>
+{{ end }}
